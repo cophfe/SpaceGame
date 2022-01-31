@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Chunk2Map : MonoBehaviour
+public class Map : MonoBehaviour
 {
 	//Exposed
 	[SerializeField] Vector2Int chunkResolution = new Vector2Int(5,5);
-	[SerializeField] Chunk2 chunkPrefab = null;
+	[SerializeField] Chunk chunkPrefab = null;
 	[SerializeField] Vector2Int cellResolution = new Vector2Int(32, 32);
 	[SerializeField] [Min(0.001f)] float cellSize = 1.0f;
 	[SerializeField] [Range(0, 1)] float valueThreshold = 0.5f;
@@ -15,11 +15,11 @@ public class Chunk2Map : MonoBehaviour
 	[Range(0.000f, 1)] public float perlinSampleSize = 0.1f;
 
 	//Private
-	Chunk2[,] chunks;
+	Chunk[,] chunks;
 
 	private void Awake()
 	{
-		chunks = new Chunk2[chunkResolution.x, chunkResolution.y];
+		chunks = new Chunk[chunkResolution.x, chunkResolution.y];
 
 		for (int x = 0; x < chunkResolution.x; x++)
 		{
@@ -57,7 +57,7 @@ public class Chunk2Map : MonoBehaviour
 	void CreateChunk(int x, int y)
 	{
 
-		Chunk2 chunk = Instantiate(chunkPrefab, transform);
+		Chunk chunk = Instantiate(chunkPrefab, transform);
 		chunk.transform.localPosition = new Vector2(x * cellResolution.x - chunkResolution.x * cellResolution.x * 0.5f, y * cellResolution.y - chunkResolution.y * cellResolution.y * 0.5f);
 		
 		//set voxel data
@@ -94,7 +94,7 @@ public class Chunk2Map : MonoBehaviour
 	public Vector2Int CellResolution { get => cellResolution; }
 	public float CellSize { get => cellSize; }
 	public float ValueThreshold { get => valueThreshold; }
-	public Chunk2[,] Chunks { get => chunks; }
+	public Chunk[,] Chunks { get => chunks; }
 }
 
 public struct Bounds2D

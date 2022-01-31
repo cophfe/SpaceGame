@@ -7,7 +7,7 @@ public class ChunkDrawer : MonoBehaviour
 	public float startRadius = 5;
 	public float radiusChangeSpeed = 0.1f;
 	public float rotateSpeed = 0.1f;
-	public Chunk2Map map;
+	public Map map;
 	float radius;
 	bool negative = false;
 	DrawType type = DrawType.Circle;
@@ -28,7 +28,7 @@ public class ChunkDrawer : MonoBehaviour
 	{
 		if (Input.GetMouseButton(0))
 		{
-			RaycastHit hitInfo;
+			//RaycastHit hitInfo;
 			if (map && GetBounds().Intersects(map.GetBounds()))
 			{
 				
@@ -54,7 +54,7 @@ public class ChunkDrawer : MonoBehaviour
 		transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 	}
 
-	void DrawCircle(Chunk2Map map)
+	void DrawCircle(Map map)
 	{
 
 	}
