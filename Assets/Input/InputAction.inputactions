@@ -36,6 +36,14 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "ChangeModifierType",
+                    "type": "Button",
+                    "id": "3a8a1160-1794-4349-9662-e27541e6dcfa",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -80,6 +88,17 @@
                     "processors": "",
                     "groups": "KBM",
                     "action": "ChangeStencil",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bcfbbfad-ad23-4a4b-a627-cc5386b93e49",
+                    "path": "<Keyboard>/capsLock",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ChangeModifierType",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

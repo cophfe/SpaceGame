@@ -5,9 +5,9 @@ using UnityEngine;
 public class Map : MonoBehaviour
 {
 	//Exposed
-	[SerializeField] Vector2Int chunkResolution = new Vector2Int(5,5);
+	[SerializeField] Vector2Int chunkResolution = new Vector2Int(5, 5);
 	[SerializeField] Chunk chunkPrefab = null;
-	[SerializeField] Vector2Int cellResolution = new Vector2Int(32, 32);
+	[SerializeField] int cellResolution = 32;
 	[SerializeField] [Min(0.001f)] float cellSize = 1.0f;
 	[SerializeField] [Range(0, 1)] float valueThreshold = 0.5f;
 
@@ -16,6 +16,7 @@ public class Map : MonoBehaviour
 
 	//Private
 	Chunk[,] chunks;
+	public Vector2 HalfSize { get; private set; }
 
 	private void Awake()
 	{
@@ -29,13 +30,65 @@ public class Map : MonoBehaviour
 			}
 		}
 
-		var collider = GetComponent<BoxCollider2D>();
-		if (collider)
-		{
-			collider.size = new Vector2(cellResolution.x * cellSize * chunkResolution.x, cellResolution.y * cellSize * chunkResolution.y);
-			collider.offset = collider.size / 2;
-		}
+		ChunkSize = cellResolution * cellSize;
+		HalfSize = new Vector2(ChunkSize * chunkResolution.x * 0.5f, ChunkSize * chunkResolution.y * 0.5f);
 	}
+	private void Start()
+	{
+		//register self to GameManager
+		GameManager.Instance.RegisterMap(this);
+	}
+
+	public void ApplyStencil(Stencil stencil)
+	{
+		Vector2 sPos = stencil.Position;
+		Vector2 point = transform.InverseTransformPoint(stencil.Position);
+		point += HalfSize;
+		stencil.Position = point;
+
+		//assuming stencil position is relative to the centre of the map
+		//find the chunks affected
+		int xStart = (int)((stencil.XStart - cellSize) / ChunkSize);
+		if (xStart < 0)
+			xStart = 0;
+		
+		int xEnd = (int)((stencil.XEnd + cellSize) / ChunkSize);
+		if (xEnd >= chunkResolution.x)
+			xEnd = chunkResolution.x - 1;
+		
+		int yStart = (int)((stencil.YStart - cellSize) / ChunkSize);
+		if (yStart < 0)
+			yStart = 0;
+		
+		int yEnd = (int)((stencil.YEnd + cellSize) / ChunkSize);
+		if (yEnd >= chunkResolution.y)
+			yEnd = chunkResolution.y - 1;
+
+		Debug.Log($"centre: ({point.x}, {point.y}) chunks X: s: {xStart}, e: {xEnd}. Y: s: {yStart}, e: {yEnd}");
+	
+		for (int y = yEnd; y >= yStart; y--)
+		{
+			for (int x = xEnd; x >= xStart; x--)
+			{
+				stencil.Position = new Vector2(point.x - x * ChunkSize, point.y - y * ChunkSize);
+				chunks[x, y].ApplyStencil(stencil);
+			}
+		}
+
+		stencil.Position = sPos;
+	}
+
+	//check if a stencil is colliding with the map
+	public bool IsColliding(Stencil stencil)
+	{
+		Vector2 pos = transform.position;
+		//just do a 2d AABB check with the stencil
+		return (stencil.XStart	< pos.x + HalfSize.x)
+			&& (stencil.XEnd	> pos.x - HalfSize.x)
+			&& (stencil.YStart	< pos.y + HalfSize.y)
+			&& (stencil.YEnd	> pos.y - HalfSize.y);
+	}
+
 	private void OnValidate()
 	{
 		if (chunks != null)
@@ -44,7 +97,7 @@ public class Map : MonoBehaviour
 			{
 				for (int y = 0; y < chunkResolution.y; y++)
 				{
-					float[,] v = chunks[x, y].Voxels;
+					Voxel[,] v = chunks[x, y].Voxels;
 					GetChunkData(x, y, ref v);
 					chunks[x, y].Voxels = v;
 
@@ -58,10 +111,10 @@ public class Map : MonoBehaviour
 	{
 
 		Chunk chunk = Instantiate(chunkPrefab, transform);
-		chunk.transform.localPosition = new Vector2(x * cellResolution.x - chunkResolution.x * cellResolution.x * 0.5f, y * cellResolution.y - chunkResolution.y * cellResolution.y * 0.5f);
-		
+		chunk.transform.localPosition = new Vector2(x * cellResolution - chunkResolution.x * cellResolution * 0.5f, y * cellResolution - chunkResolution.y * cellResolution * 0.5f);
+
 		//set voxel data
-		float[,] voxels = null;
+		Voxel[,] voxels = null;
 		GetChunkData(x, y, ref voxels);
 
 		chunk.Initialize(this, voxels);
@@ -69,30 +122,32 @@ public class Map : MonoBehaviour
 		chunks[x, y] = chunk;
 	}
 
-	void GetChunkData(int chunkX, int chunkY, ref float[,] voxels)
+	//should access chunk data from a file, or generate it if not in file
+	void GetChunkData(int chunkX, int chunkY, ref Voxel[,] voxels)
 	{
-		if (voxels == null || voxels.Length != (cellResolution.x + 1 * cellResolution.x + 1))
-			voxels = new float[cellResolution.x + 1, cellResolution.y + 1];
+		if (voxels == null || voxels.Length != (cellResolution + 1 * cellResolution + 1))
+			voxels = new Voxel[cellResolution + 1, cellResolution + 1];
 
-		Vector2 offset = new Vector2(chunkX * cellResolution.x * perlinSampleSize, chunkY * cellResolution.y * perlinSampleSize);
+		Vector2 offset = new Vector2(chunkX * cellResolution * perlinSampleSize, chunkY * cellResolution * perlinSampleSize);
 
-		for (int x = 0; x < cellResolution.x + 1; x++)
+		for (int x = 0; x < cellResolution + 1; x++)
 		{
-			for (int y = 0; y < cellResolution.y + 1; y++)
+			for (int y = 0; y < cellResolution + 1; y++)
 			{
-				voxels[x, y] = Mathf.Clamp01(Mathf.PerlinNoise(x * perlinSampleSize + offset.x, y * perlinSampleSize + offset.y));
+				voxels[x, y].value = Mathf.Clamp01(Mathf.PerlinNoise(x * perlinSampleSize + offset.x, y * perlinSampleSize + offset.y));
 			}
 		}
 	}
 
 	public Bounds2D GetBounds()
 	{
-		return new Bounds2D(transform.position, cellResolution.x * cellSize * chunkResolution.x, cellResolution.y * cellSize * chunkResolution.y);
+		return new Bounds2D(transform.position, HalfSize.x * 2, HalfSize.y * 2);
 	}
 	
 	public Vector2Int ChunkResolution { get => chunkResolution; }
-	public Vector2Int CellResolution { get => cellResolution; }
+	public int CellResolution { get => cellResolution; }
 	public float CellSize { get => cellSize; }
+	public float ChunkSize { get; private set; }
 	public float ValueThreshold { get => valueThreshold; }
 	public Chunk[,] Chunks { get => chunks; }
 }

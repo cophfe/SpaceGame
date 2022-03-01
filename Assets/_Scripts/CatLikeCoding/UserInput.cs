@@ -73,6 +73,7 @@ namespace CatLikeCoding
 			vis.position = map.transform.TransformPoint(center);
 			vis.localScale = Vector3.one * ((currentStencil.Radius + 0.5f) * map.VoxelSize * 2f);
 		}
+
 		#region Evaluate Functions
 
 		public bool EvaluateActionHeld()
