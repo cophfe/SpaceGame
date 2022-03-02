@@ -103,13 +103,13 @@ public class CircleStencil : Stencil
 		switch (ModifierType)
 		{
 			case StencilModifierType.Set:
-				voxel.value = Mathf.Max(Strength *(Radius -  Mathf.Sqrt(x * x + y * y)), voxel.value);
+				voxel.value = Mathf.Max(Strength *(Radius -  Mathf.Sqrt(x * x + y * y) + 0.5f), voxel.value);
 				break;
 			case StencilModifierType.Add:
-				voxel.value = Mathf.Clamp01(voxel.value + Strength * (Radius - Mathf.Sqrt(x * x + y * y)));
+				voxel.value = Mathf.Clamp01(voxel.value + Strength * (Radius - Mathf.Sqrt(x * x + y * y) + 0.5f));
 				break;
 			case StencilModifierType.AddOvertime:
-				voxel.value = Mathf.Clamp01(voxel.value + Strength * (Radius - Mathf.Sqrt(x * x + y * y)) * Time.deltaTime);
+				voxel.value = Mathf.Clamp01(voxel.value + Strength * (Radius - Mathf.Sqrt(x * x + y * y) + 0.5f) * Time.deltaTime);
 				break;
 		}
 	}

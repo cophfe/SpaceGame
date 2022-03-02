@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using TMPro;
 
 public class ChunkDrawer : MonoBehaviour
 {
@@ -9,6 +11,10 @@ public class ChunkDrawer : MonoBehaviour
 	[SerializeField] Transform[] stencilVisualisations;
 	[SerializeField] Material stencilMaterial;
 	[SerializeField] bool snapToGrid = false;
+	[SerializeField] TextMeshProUGUI radText;
+	[SerializeField] TextMeshProUGUI modText;
+	[SerializeField] TextMeshProUGUI strText;
+	[SerializeField] TextMeshProUGUI shaText;
 	#endregion
 
 	#region Private
@@ -19,7 +25,8 @@ public class ChunkDrawer : MonoBehaviour
 
 	private void Awake()
 	{
-		stencil = new SquareStencil(1.0f, 2, StencilModifierType.Add);
+		stencil = new SquareStencil(1.0f, 2, StencilModifierType.Set);
+		UpdateText();
 	}
 
 
@@ -88,8 +95,7 @@ public class ChunkDrawer : MonoBehaviour
 		if (ctx.performed)
 		{
 			stencil.Strength = -stencil.Strength;
-			Debug.Log("fill: " + stencil.Strength);
-
+			UpdateText();
 		}
 	}
 
@@ -105,8 +111,7 @@ public class ChunkDrawer : MonoBehaviour
 			{
 				stencil.Radius = stencil.Radius - 1;
 			}
-			Debug.Log("radius: " + stencil.Radius);
-
+			UpdateText();
 		}
 	}
 
@@ -121,13 +126,12 @@ public class ChunkDrawer : MonoBehaviour
 			if (stencil.StencilType == StencilType.Circle)
 			{
 				stencil = new SquareStencil(stencil.Strength, stencil.Radius, stencil.ModifierType);
-				Debug.Log("Switched to square");
 			}
 			else
 			{
 				stencil = new CircleStencil(stencil.Strength, stencil.Radius, stencil.ModifierType);
-				Debug.Log("Switched to circle");
 			}
+			UpdateText();
 		}
 
 	}
@@ -137,7 +141,40 @@ public class ChunkDrawer : MonoBehaviour
 		if (ctx.performed)
 		{
 			stencil.ModifierType = (StencilModifierType)((int)(stencil.ModifierType + 1) % (int)StencilModifierType.Count);
+			UpdateText();
 		}
 	}
+
+	void UpdateText()
+	{
+
+		radText.text = stencil.Radius.ToString();
+		strText.text = stencil.Strength.ToString();
+
+		switch (stencil.ModifierType)
+		{
+			case StencilModifierType.Set:
+				modText.text = "Set";
+				break;
+			case StencilModifierType.Add:
+				modText.text = "Add";
+				break;
+			case StencilModifierType.AddOvertime:
+				modText.text = "AddOvertime";
+				break;
+			default:
+				modText.text = "Error";
+				break;
+		}
+
+		if (stencil.StencilType == StencilType.Circle)
+		{
+			shaText.text = "Circle";
+		}
+		else
+		{
+			shaText.text = "Square";
+		}
+	}	
 	#endregion
 }

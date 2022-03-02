@@ -12,8 +12,9 @@ public class Chunk : MonoBehaviour
 	List<Vector3> vertices = new List<Vector3>();
 	List<int> triangles = new List<int>();
 	TreeNode tree;
-
 	Map map;
+
+	List<EdgeCollider2D> colliders = null;
 
 	public void Initialize(Map map, Voxel[,] values)
 	{
@@ -23,7 +24,8 @@ public class Chunk : MonoBehaviour
 		GetComponent<MeshFilter>().mesh = mesh;
 		voxels = values;
 		this.map = map;
-		GenerateMesh();
+
+		Generate();
 	}
 
 	//temporarily public set
@@ -65,6 +67,7 @@ public class Chunk : MonoBehaviour
 	public void Generate()
 	{
 		GenerateMesh();
+		GeneratePhysicsEdge();
 	}
 
 	public void GenerateTree(int dim)
@@ -161,6 +164,8 @@ public class Chunk : MonoBehaviour
 		mesh.vertices = vertices.ToArray();
 		mesh.triangles = triangles.ToArray();
 
+		//x and y are the bottom edges of the node
+		//length is the width, in cells, of the node
 		void ContourSubTree(TreeNode node, int x, int y, int len)
 		{
 			if (map.ValueThreshold > node.min)
@@ -201,16 +206,7 @@ public class Chunk : MonoBehaviour
 
 	public void March(int x, int y)
 	{
-		byte cellType = 0;
-
-		if (voxels[x, y].value > map.ValueThreshold)
-			cellType = 0b0001;
-		if (voxels[x + 1, y].value > map.ValueThreshold)
-			cellType |= 0b0010;
-		if (voxels[x, y + 1].value > map.ValueThreshold)
-			cellType |= 0b0100;
-		if (voxels[x + 1, y + 1].value > map.ValueThreshold)
-			cellType |= 0b1000;
+		byte cellType = GetCellType(x, y);
 
 		switch (cellType)
 		{
@@ -228,6 +224,8 @@ public class Chunk : MonoBehaviour
 					GetPointBetweenPoints(x, y, x + 1, y),
 					GetPointBetweenPoints(x + 1, y, x + 1, y + 1)
 					);
+				//edgePoints.Add(a);
+
 				break;
 			case 3:
 				AddQuad(
@@ -346,6 +344,407 @@ public class Chunk : MonoBehaviour
 		}
 	}
 
+	byte GetCellType(int x, int y)
+	{
+		byte cellType = 0;
+
+		if (voxels[x, y].value > map.ValueThreshold)
+			cellType = 0b0001;
+		if (voxels[x + 1, y].value > map.ValueThreshold)
+			cellType |= 0b0010;
+		if (voxels[x, y + 1].value > map.ValueThreshold)
+			cellType |= 0b0100;
+		if (voxels[x + 1, y + 1].value > map.ValueThreshold)
+			cellType |= 0b1000;
+
+		return cellType;
+	}
+
+	bool DoesCellHaveEdge(int x, int y)
+	{
+
+		return ! //not
+			((voxels[x, y].value > map.ValueThreshold && voxels[x + 1, y].value > map.ValueThreshold && voxels[x, y + 1].value > map.ValueThreshold && voxels[x + 1, y + 1].value > map.ValueThreshold) // cell full
+			|| (voxels[x, y].value < map.ValueThreshold && voxels[x + 1, y].value < map.ValueThreshold && voxels[x, y + 1].value < map.ValueThreshold && voxels[x + 1, y + 1].value < map.ValueThreshold)); // cell empty
+	}
+
+	//used to check if a physics edge has already been found
+	private struct EdgeNodeData
+	{
+
+		public EdgeNodeData(int x, int y, Direction lastDirection = Direction.unset)
+		{
+			this.x = x;
+			this.y = y;
+			this.lastDirection = lastDirection;
+		}
+
+		public int x, y;
+
+		//this is only used to identify if an edge has already been added for cells that have more than one edge
+		public Direction lastDirection;
+	}
+
+	enum Direction : byte
+	{
+		up, 
+		down,
+		left, 
+		right,
+		unset
+	}
+
+	public void GeneratePhysicsEdge()
+	{
+		if (colliders == null)
+		{
+			colliders = new List<EdgeCollider2D>();
+		}
+		else
+		{
+			for (int i = 0; i < colliders.Count; i++)
+			{
+				Destroy(colliders[i]);
+			}
+			colliders.Clear();
+		}
+
+		//holds all information about edges that 
+		List<EdgeNodeData> edgeData = new List<EdgeNodeData>();
+		List<Vector2> currentEdgeList = null;
+		int dim = map.CellResolution > map.CellResolution ? map.CellResolution : map.CellResolution;
+		dim = TwoPow(Mathf.CeilToInt(Mathf.Log(dim, 2)));
+
+		EdgeNodeData edgeInfo = new EdgeNodeData(0,0);
+		//find a node on an edge that isn't on the edgelist 
+		while (FindEdge(tree, 0, 0, dim, ref edgeInfo)) 
+		{
+			//if this edge can be found there is a collider to be added here.
+			currentEdgeList = new List<Vector2>();
+
+			Vector2Int coord = new Vector2Int(edgeInfo.x, edgeInfo.y);
+			//the first edge should have itself called twice, once per direction that has the potential to have an edge in it
+			switch (GetCellType(coord.x, coord.y))
+			{
+				case 1:
+					CalculateEdge(coord, Direction.left);
+					CalculateEdge(coord, Direction.down);
+					break;
+				case 2:
+					CalculateEdge(coord, Direction.right);
+					CalculateEdge(coord, Direction.down);
+					break;
+				case 3:
+					CalculateEdge(coord, Direction.left);
+					CalculateEdge(coord, Direction.right);
+					break;
+				case 4:
+					CalculateEdge(coord, Direction.up);
+					CalculateEdge(coord, Direction.left);
+					break;
+				case 5:
+					CalculateEdge(coord, Direction.up);
+					CalculateEdge(coord, Direction.down);
+					break;
+				case 6:
+					if (edgeInfo.lastDirection == Direction.up || edgeInfo.lastDirection == Direction.left)
+					{
+						CalculateEdge(coord, Direction.left);
+						CalculateEdge(coord, Direction.up);
+					}
+					else
+					{
+						CalculateEdge(coord, Direction.right);
+						CalculateEdge(coord, Direction.down);
+					}
+					
+					break;
+				case 7:
+					CalculateEdge(coord, Direction.up);
+					CalculateEdge(coord, Direction.right);
+					break;
+				case 8:
+					CalculateEdge(coord, Direction.up);
+					CalculateEdge(coord, Direction.right);
+					break;
+				case 9:
+					if (edgeInfo.lastDirection == Direction.up || edgeInfo.lastDirection == Direction.right)
+					{
+						CalculateEdge(coord, Direction.right);
+						CalculateEdge(coord, Direction.up);
+					}
+					else
+					{
+						CalculateEdge(coord, Direction.left);
+						CalculateEdge(coord, Direction.down);
+					}
+					break;
+				case 10:
+					CalculateEdge(coord, Direction.up);
+					CalculateEdge(coord, Direction.down);
+					break;
+				case 11:
+					CalculateEdge(coord, Direction.left);
+					CalculateEdge(coord, Direction.up);
+					break;
+				case 12:
+					CalculateEdge(coord, Direction.left);
+					CalculateEdge(coord, Direction.right);
+					break;
+				case 13:
+					CalculateEdge(coord, Direction.right);
+					CalculateEdge(coord, Direction.down);
+					break;
+				case 14:
+					CalculateEdge(coord, Direction.left);
+					CalculateEdge(coord, Direction.down);
+					break;
+			}
+
+			//now add new collider
+			EdgeCollider2D collider = gameObject.AddComponent<EdgeCollider2D>();
+			collider.SetPoints(currentEdgeList);
+			colliders.Add(collider);
+		}
+
+		//recursively calculate edge vertices and add them to array
+		void CalculateEdge(Vector2Int coord, Direction previousCoordOffset)
+		{
+			//This node's edge WILL be calculated. therefore should add to this edge data thing so that it won't be recalculated.
+			edgeData.Add(new EdgeNodeData(coord.x, coord.y, previousCoordOffset));
+
+			//edge vertices are the ones that are interpolated
+			//neighbours are based on the type of cell and the previous coordinate
+			// some cells can have two edges running through them (cases 9 and 6)
+
+			switch (GetCellType(coord.x, coord.y))
+			{
+				case 1:
+					//we need to add the vertex in the opposite direction of the previous coord
+					if (previousCoordOffset == Direction.left)
+						//iterate to the cell below this one, if it is valid
+						IterateDown();
+					else
+						IterateLeft();
+					break;
+				case 2:
+					if (previousCoordOffset == Direction.down)
+						IterateRight();
+					else
+						IterateDown();
+					break;
+				case 3:
+					if (previousCoordOffset == Direction.left)
+						IterateRight();
+					else
+						IterateLeft();
+					break;
+				case 4:
+					if (previousCoordOffset == Direction.up)
+						IterateLeft();
+					else
+						IterateUp();
+					break;
+				case 5:
+					if (previousCoordOffset == Direction.up)
+						IterateDown();
+					else
+						IterateUp();
+					break;
+				case 6:
+					//special
+					switch (previousCoordOffset)
+					{
+						case Direction.up:
+							IterateLeft();
+							break;
+						case Direction.down:
+							IterateRight();
+							break;
+						case Direction.left:
+							IterateUp();
+							break;
+						case Direction.right:
+							IterateDown();
+							break;
+					}
+					break;
+				case 7:
+					if (previousCoordOffset == Direction.up)
+						IterateRight();
+					else
+						IterateUp();
+					break;
+				case 8:
+					goto case 7;
+				case 9:
+					//special
+					switch (previousCoordOffset)
+					{
+						case Direction.up:
+							IterateRight();
+							break;
+						case Direction.down:
+							IterateLeft();
+							break;
+						case Direction.left:
+							IterateDown();
+							break;
+						case Direction.right:
+							IterateUp();
+							break;
+					}
+					break;
+				case 10:
+					goto case 5;
+				case 11:
+					goto case 4;
+				case 12:
+					goto case 3;
+				case 13:
+					goto case 2;
+				case 14:
+					goto case 1;
+
+				default:
+					//no edge
+					break;
+			}
+
+			void IterateDown()
+			{
+				//add point
+				currentEdgeList.Add(GetPointBetweenPoints(coord.x, coord.y, coord.x + 1, coord.y));
+
+				//set coord to be true for the next cell coord (which is one down in this case)
+				coord.y--;
+
+				//calculate the next edge, unless the next edge does not exist
+				EdgeNodeData data = new EdgeNodeData(coord.x, coord.y, Direction.up);
+
+				if (coord.y > 0 && CheckEdgeIsNew(ref data)) //if next edge exists and is not in edgeloop already (Should not have to use DoesCellHaveEdge(coord.x, coord.y) because if that false something is not being done properly and this whole thing will break anyway)
+				{
+					//iterate to next edge
+					CalculateEdge(coord, Direction.up);
+				}
+			}
+			void IterateUp()
+			{
+				currentEdgeList.Add(GetPointBetweenPoints(coord.x, coord.y + 1, coord.x + 1, coord.y + 1));
+				coord.y++;
+				EdgeNodeData data = new EdgeNodeData(coord.x, coord.y, Direction.up);
+				if (coord.y < map.CellResolution - 1 && CheckEdgeIsNew(ref data))
+					CalculateEdge(coord, Direction.down);
+			}
+			void IterateRight()
+			{
+				currentEdgeList.Add(GetPointBetweenPoints(coord.x + 1, coord.y, coord.x + 1, coord.y + 1));
+				coord.x++;
+				EdgeNodeData data = new EdgeNodeData(coord.x, coord.y, Direction.left);
+				if (coord.x < map.CellResolution - 1 && CheckEdgeIsNew(ref data))
+					CalculateEdge(coord, Direction.left);
+			}
+			void IterateLeft()
+			{
+				currentEdgeList.Add(GetPointBetweenPoints(coord.x, coord.y, coord.x, coord.y + 1));
+				coord.x--;
+				EdgeNodeData data = new EdgeNodeData(coord.x, coord.y, Direction.right);
+				if (coord.x > 0 && CheckEdgeIsNew(ref data))
+					CalculateEdge(coord, Direction.right);
+			}
+		}
+
+		bool FindEdge(TreeNode node, int x, int y, int len, ref EdgeNodeData edgeInfo)
+		{
+
+			if (map.ValueThreshold > node.min && map.ValueThreshold <= node.max) // in this case there are edges to add points for
+			{
+				if (len == 1) // in this case this is an edge to add points for. need to look at the neighboring nodes as they also will 
+				{
+					edgeInfo = new EdgeNodeData(x, y, Direction.up);
+					//if node is leef and if this node is not already on one of the edgeLists, return true
+					return (node.GetNodeType(map.ValueThreshold) == TreeNode.NodeType.Leef)
+						&& CheckEdgeIsNew(ref edgeInfo);
+				}
+				else
+				{
+					//try and find an edge node that isn't already found
+
+					if (FindEdge(node.treeNodes[0], x, y, len / 2, ref edgeInfo))
+						return true;
+					if (FindEdge(node.treeNodes[1], x + len / 2, y, len / 2, ref edgeInfo))
+						return true;
+					if (FindEdge(node.treeNodes[2], x, y + len / 2, len / 2, ref edgeInfo))
+						return true;
+					if (FindEdge(node.treeNodes[3], x + len / 2, y + len / 2, len / 2, ref edgeInfo))
+						return true;
+
+					return false;
+				}
+			}
+			return false;
+		}
+
+		//returns true if the edge has already been found 
+		bool CheckEdgeIsNew(ref EdgeNodeData edgeInfo)
+		{
+			int size = edgeData.Count;
+
+			//count of edges in this coord. max of two
+			byte edgeCount = 0;
+
+			for (int i = 0; i < size; i++)
+			{
+				// if the edge already exists in the array, it shouldn't be constructed again.
+				if (edgeInfo.x == edgeData[i].x && edgeInfo.y == edgeData[i].y)
+				{
+					//if the cell type is one that has two edges, we should check if one edge is yet to be accounted for.
+					//if there is one edge yet to be accounted for, give edgeInfo information about which direction the edge needs to be 
+					switch (GetCellType(edgeInfo.x, edgeInfo.y))
+					{
+						case 6:
+							//if edgeCount is already equal to one, there are two edges already in this cell. return false.
+							if (edgeCount == 1)
+								return false;
+
+							if (edgeInfo.lastDirection == Direction.up || edgeInfo.lastDirection == Direction.left)
+							{
+								edgeInfo.lastDirection = Direction.right;
+							}
+							else
+							{
+								edgeInfo.lastDirection = Direction.left;
+							}
+							edgeCount++;
+							break;
+
+						case 9:
+							if (edgeCount == 1)
+								return false;
+
+							if (edgeInfo.lastDirection == Direction.up || edgeInfo.lastDirection == Direction.right)
+							{
+								edgeInfo.lastDirection = Direction.left;
+							}
+							else
+							{
+								edgeInfo.lastDirection = Direction.right;
+							}
+							edgeCount++;
+							break;
+
+						default:
+							//no edge
+							return false;
+					}
+				}
+			}
+
+			//if reached this point, there is still an edge to be added at this cell coord.
+			return true;
+		}
+	}
+
 	void AddTriangle(Vector3 a, Vector3 b, Vector3 c)
 	{
 		triangles.Add(vertices.Count);
@@ -354,6 +753,7 @@ public class Chunk : MonoBehaviour
 		vertices.Add(a);
 		vertices.Add(b);
 		vertices.Add(c);
+
 	}
 
 	void AddQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
@@ -368,6 +768,7 @@ public class Chunk : MonoBehaviour
 		vertices.Add(b);
 		vertices.Add(c);
 		vertices.Add(d);
+
 	}
 
 	void AddPentagon(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 e)
@@ -440,6 +841,19 @@ public class Chunk : MonoBehaviour
 			val *= 2;
 		}
 		return val;
+	}
+
+	private void OnDrawGizmos()
+	{
+		Gizmos.matrix = Matrix4x4.Translate(transform.position);
+		for (int x = 0; x < voxels.GetLength(0); x++)
+		{
+			for (int y = 0; y < voxels.GetLength(1); y++)
+			{
+				Gizmos.color = voxels[x, y].value > map.ValueThreshold ? Color.black : Color.white;
+				Gizmos.DrawCube(GetPointFromIndex(x, y) * map.CellSize, new Vector3(0.15f,0.15f, 0.001f));
+			}
+		}
 	}
 }
 

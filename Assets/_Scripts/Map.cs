@@ -64,7 +64,7 @@ public class Map : MonoBehaviour
 		if (yEnd >= chunkResolution.y)
 			yEnd = chunkResolution.y - 1;
 
-		Debug.Log($"centre: ({point.x}, {point.y}) chunks X: s: {xStart}, e: {xEnd}. Y: s: {yStart}, e: {yEnd}");
+		//Debug.Log($"centre: ({point.x}, {point.y}) chunks X: s: {xStart}, e: {xEnd}. Y: s: {yStart}, e: {yEnd}");
 	
 		for (int y = yEnd; y >= yStart; y--)
 		{
@@ -97,9 +97,9 @@ public class Map : MonoBehaviour
 			{
 				for (int y = 0; y < chunkResolution.y; y++)
 				{
-					Voxel[,] v = chunks[x, y].Voxels;
-					GetChunkData(x, y, ref v);
-					chunks[x, y].Voxels = v;
+					//Voxel[,] v = chunks[x, y].Voxels;
+					//GetChunkData(x, y, ref v);
+					//chunks[x, y].Voxels = v;
 
 					chunks[x, y].GenerateMesh();
 				}
