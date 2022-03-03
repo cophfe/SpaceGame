@@ -898,18 +898,18 @@ public class Chunk : MonoBehaviour
 		return val;
 	}
 
-	private void OnDrawGizmos()
-	{
-		Gizmos.matrix = Matrix4x4.Translate(transform.position);
-		for (int x = 0; x < voxels.GetLength(0); x++)
-		{
-			for (int y = 0; y < voxels.GetLength(1); y++)
-			{
-				Gizmos.color = voxels[x, y].value > map.ValueThreshold ? Color.black : Color.white;
-				Gizmos.DrawCube(GetPointFromIndex(x, y) * map.CellSize, new Vector3(0.15f,0.15f, 0.001f));
-			}
-		}
-	}
+	//private void OnDrawGizmos()
+	//{
+	//	Gizmos.matrix = Matrix4x4.Translate(transform.position);
+	//	for (int x = 0; x < voxels.GetLength(0); x++)
+	//	{
+	//		for (int y = 0; y < voxels.GetLength(1); y++)
+	//		{
+	//			Gizmos.color = voxels[x, y].value > map.ValueThreshold ? Color.black : Color.white;
+	//			Gizmos.DrawCube(GetPointFromIndex(x, y) * map.CellSize, new Vector3(0.15f,0.15f, 0.001f));
+	//		}
+	//	}
+	//}
 }
 
 

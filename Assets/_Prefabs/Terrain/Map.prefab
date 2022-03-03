@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3256928364471507321}
   - component: {fileID: 3256928364471507302}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Map
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,9 +43,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44cc3adbd29206e4da3f134180fb3b86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkResolution: {x: 5, y: 5}
+  chunkResolution: {x: 4, y: 4}
   chunkPrefab: {fileID: 1189084220349402336, guid: e35768eb23ff73b49b302f0cb6f57d72, type: 3}
-  cellResolution: {x: 32, y: 32}
+  cellResolution: 32
   cellSize: 1
   valueThreshold: 0.5
   perlinSampleSize: 0.1
