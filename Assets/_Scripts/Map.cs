@@ -101,7 +101,7 @@ public class Map : MonoBehaviour
 					//GetChunkData(x, y, ref v);
 					//chunks[x, y].Voxels = v;
 
-					chunks[x, y].GenerateMesh();
+					chunks[x, y].Generate();
 				}
 			}
 		}
@@ -109,8 +109,8 @@ public class Map : MonoBehaviour
 	}
 	void CreateChunk(int x, int y)
 	{
-
 		Chunk chunk = Instantiate(chunkPrefab, transform);
+		chunk.gameObject.name = $"Chunk {x}, {y}";
 		chunk.transform.localPosition = new Vector2(x * cellResolution - chunkResolution.x * cellResolution * 0.5f, y * cellResolution - chunkResolution.y * cellResolution * 0.5f);
 
 		//set voxel data
