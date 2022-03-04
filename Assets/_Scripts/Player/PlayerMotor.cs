@@ -184,6 +184,10 @@ public class PlayerMotor : MonoBehaviour
 			groundAngle = Vector2.Angle(groundNormal, upDirection);
 			groundCollider = hit.collider;
 		}
+		else
+		{
+			groundNormal = upDirection;
+		}
 	}
 
 	void EvaluateJump()
@@ -364,7 +368,7 @@ public class PlayerMotor : MonoBehaviour
 		{
 			if (controller.HorizontalInput != 0)
 			{
-				Vector2 tangent = Vector2.Perpendicular(groundNormal);
+				Vector2 tangent = Vector2.Perpendicular(upDirection);
 				targetVelocity = GetInputDir() * tangent * -targetSpeed;
 
 				Vector2 vel = Vector2.Dot(tangent, controller.RB.velocity) * tangent;

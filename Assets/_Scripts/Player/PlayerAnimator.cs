@@ -14,6 +14,18 @@ public class PlayerAnimator : MonoBehaviour
 	[Header("Hand Kinematics")]
 	[SerializeField] ArmInfo leftArm;
 	[SerializeField] ArmInfo rightArm;
+	[SerializeField] float armTopLength = 0.57f;
+	[SerializeField] float armBottomLength = 0.46f;
+	[SerializeField] float handSpeed = 4;
+	[SerializeField] float handSpeedAirMod = 2.0f;
+	[SerializeField] float handSpeedRunMod = 1.0f;
+	[SerializeField] float elbowSpeed = 4;
+	[SerializeField] float inAirHandOffset = 0.3f;
+	[SerializeField] float runHandDistance = 0.6f; //the distance between the attach point and the hand while running
+	[SerializeField] float runLowerAngle = 0; //angle addition to the rest angle while running (hand is rotated low)
+	[SerializeField] float runUpperAngle = 30f; //angle addition to the rest angle while running (hand rotated high)
+	[SerializeField] float runArmSpeed = 0.1f; //angle addition to the rest angle while running (hand rotated high)
+	[SerializeField] float runHorizontalMaxSpeed = 5; // the horizontal speed at which the run arm distance reaches the hand distance
 
 	[Header("Feet Kinematics")]
 	[SerializeField] FootInfo leftFoot;
@@ -50,6 +62,9 @@ public class PlayerAnimator : MonoBehaviour
 	Vector2 lastPos;
 	Vector2 bobPosition;
 	float bobX = 0;
+
+	Vector2 lastRBPosition;
+	Vector2 rBDelta;
 	#endregion
 
 	private void Awake()
@@ -63,6 +78,8 @@ public class PlayerAnimator : MonoBehaviour
 		//arms
 		leftArm.Set();
 		rightArm.Set();
+		leftArm.isLeftArm = true;
+		rightArm.isLeftArm = false;
 
 		//legs
 		leftFoot.leg = leftFoot.foot.GetComponent<LineRenderer>();
@@ -79,7 +96,7 @@ public class PlayerAnimator : MonoBehaviour
 	private void Start()
 	{
 		leftFoot.target = leftFoot.footAttachment.position - (Vector3)controller.Motor.UpDirection * (legTopLength + legBottomLength);
-
+		lastRBPosition = controller.transform.position;
 	}
 
 	private void LateUpdate()
@@ -98,6 +115,23 @@ public class PlayerAnimator : MonoBehaviour
 		CalculateLeg(ref leftFoot);
 		CalculateLeg(ref rightFoot);
 
+		BobBody();
+
+		Vector2 newPos = controller.transform.position;
+		rBDelta = newPos - lastRBPosition;
+		CalculateHand(ref leftArm);
+		CalculateHand(ref rightArm);
+		lastRBPosition = newPos;
+
+		CalculateArm(ref leftArm);
+		CalculateArm(ref rightArm);
+	}
+
+	void BobBody()
+	{
+		Vector2 tangent = Vector2.Perpendicular(controller.Motor.UpDirection);
+
+		//Bob
 		Vector2 newPos = transform.position;
 		if (controller.Motor.IsGrounded)
 		{
@@ -224,8 +258,8 @@ public class PlayerAnimator : MonoBehaviour
 			else if (horizontalDistance < 0.02f)
 			{
 				//if the player falls, sometimes the foot gets caught in the air. this should prevent that by moving the foot down if it is in the air
-				RaycastHit2D hit2 = Physics2D.Raycast(foot.foot.position, -controller.Motor.UpDirection, footRadius + footScanExtraDist, footAttachmentMask.value);
-				if (hit2 && hit2.distance > bobMagnitude) //bob magnitude is a random value, so is (footRadius + footScanExtraDist)^. it used to have reason but now after a bunch of edits it doesn't. buut it works so whatever
+				RaycastHit2D hit2 = Physics2D.Raycast(foot.foot.position, -controller.Motor.UpDirection, legTopLength + legBottomLength + footScanExtraDist, footAttachmentMask.value);
+				if (hit2 && hit2.distance > bobMagnitude) //bob magnitude is a random value, so is the raycast length^. it used to have reason but now after a bunch of edits it doesn't. buut it works so whatever
 				{
 					foot.target = hitPoint;
 					foot.point = hitPoint;
@@ -345,6 +379,9 @@ public class PlayerAnimator : MonoBehaviour
 		foot.leg.SetPosition(0, foot.foot.InverseTransformPoint(foot.footAttachment.position));
 		foot.leg.SetPosition(2, Vector2.zero);
 
+		if (float.IsNaN(targetMidPoint.x) || float.IsNaN(targetMidPoint.y))
+			targetMidPoint = 0.5f * foot.leg.GetPosition(0);
+
 		Vector2 midPoint = Vector2.MoveTowards(foot.leg.GetPosition(1), foot.foot.InverseTransformPoint(targetMidPoint), kneeSpeed * Time.deltaTime);
 		foot.leg.SetPosition(1, midPoint);
 	}
@@ -364,6 +401,134 @@ public class PlayerAnimator : MonoBehaviour
 	float GetVelocityInDirection(Vector2 direction, Vector2 velocity)
 	{
 		return Vector2.Dot(direction, velocity);
+	}
+
+	void CalculateHand(ref ArmInfo arm)
+	{
+		if (!controller.Motor.IsGrounded)
+		{
+			Vector2 newTargetPoint = arm.restPoint + controller.Motor.UpDirection * inAirHandOffset;
+
+			arm.rotateT = 0;
+			//keep object in same position as previous frame
+			arm.hand.position -= (Vector3)rBDelta;
+			//smoothly move toward new position
+			arm.hand.position = Vector2.SmoothDamp(arm.hand.position, arm.armAttachPoint.TransformPoint(newTargetPoint), ref arm.handVelocity, handSpeed * handSpeedAirMod);
+		}
+		else if (PlayerIsWalking)
+		{
+			arm.bendDirectionIsLeft = PlayerHorizontalSpeed > 0;
+			arm.SetOrdered(arm.bendDirectionIsLeft == !arm.isLeftArm); //this seems like a slow thing to set every frame but what do I know
+
+			Vector2 armDelta = arm.armAttachPoint.TransformPoint(arm.restPoint) - arm.armAttachPoint.position;
+			float distanceToHand = Mathf.Lerp(armDelta.magnitude, runHandDistance, Mathf.Abs(PlayerHorizontalSpeed) / runHorizontalMaxSpeed);
+			armDelta = (arm.armAttachPoint.TransformPoint(arm.restPoint) - arm.armAttachPoint.position).normalized * distanceToHand;
+			
+			arm.rotateT += PlayerHorizontalSpeed * runArmSpeed * Time.deltaTime;
+
+			int sign = System.Math.Sign(PlayerHorizontalSpeed);
+
+			float t = arm.isLeftArm ? 0.5f * Mathf.Sin(arm.rotateT) + 0.5f : 0.5f * Mathf.Cos(arm.rotateT) + 0.5f;
+			Quaternion rotation = Quaternion.Slerp(Quaternion.Euler(0, 0, sign * runLowerAngle), Quaternion.Euler(0, 0, sign * runUpperAngle), t);
+			armDelta = rotation * armDelta;
+
+			arm.hand.position = Vector2.SmoothDamp(arm.hand.position, (Vector2)arm.armAttachPoint.position + armDelta, ref arm.handVelocity, handSpeed * handSpeedRunMod);
+		}
+		else
+		{
+			arm.rotateT = 0;
+		
+			arm.bendDirectionIsLeft = !arm.isLeftArm;
+
+			//keep object in same position as previous frame
+			arm.hand.position -= (Vector3)rBDelta;
+			//smoothly move toward new position
+			arm.hand.position = (Vector3)Vector2.SmoothDamp(arm.hand.position, arm.armAttachPoint.TransformPoint(arm.restPoint), ref arm.handVelocity, handSpeed);
+		}		
+	}
+	void CalculateArm(ref ArmInfo arm)
+	{
+		Vector2 startPos = arm.armAttachPoint.position;
+		Vector2 endPos = arm.hand.position;
+		Vector2 targetMidPoint;
+
+		float c = armTopLength;
+		float b = (endPos - startPos).magnitude;
+		float a = armBottomLength;
+
+		if (b >= a + c)
+		{
+			Vector2 deltaNorm = (endPos - startPos).normalized;
+
+			Vector2 newHandPosition = startPos + deltaNorm * (armTopLength + armBottomLength);
+			arm.hand.position = newHandPosition;
+			targetMidPoint = startPos + deltaNorm * armTopLength;
+
+			int rotMod = 1;
+			if (arm.bendDirectionIsLeft)
+			{
+				arm.hand.localScale = new Vector3(-1, 1, 1);
+				rotMod = -1;
+			}
+			else
+			{
+				arm.hand.localScale = new Vector3(1, 1, 1);
+
+			}
+
+			arm.hand.rotation = Quaternion.RotateTowards(arm.hand.rotation, Quaternion.Euler(0, 0, rotMod * -Vector2.Angle(Vector2.up, controller.Motor.UpDirection)), footRotateSpeed * Time.deltaTime);
+
+		}
+		else
+		{
+			float aAngle;
+			int rotMod = 1;
+
+			if (arm.bendDirectionIsLeft)
+			{
+				arm.hand.localScale = new Vector3(-1, 1, 1);
+				aAngle = Mathf.Atan2((endPos.y - startPos.y),
+				(endPos.x - startPos.x)) - Mathf.Acos((b * b + c * c - a * a) / (2 * b * c));
+				rotMod = -1;
+			}
+			else
+			{
+				arm.hand.localScale = new Vector3(1, 1, 1);
+				aAngle = Mathf.Acos((b * b + c * c - a * a) / (2 * b * c)) + Mathf.Atan2((endPos.y - startPos.y),
+					(endPos.x - startPos.x));
+			}
+
+			targetMidPoint = startPos + new Vector2(Mathf.Cos(aAngle) * armTopLength, Mathf.Sin(aAngle) * armTopLength);
+
+			arm.hand.rotation = Quaternion.RotateTowards(arm.hand.rotation, Quaternion.Euler(0, 0, rotMod * -Vector2.Angle(Vector2.up, (targetMidPoint - endPos).normalized)), footRotateSpeed * Time.deltaTime);
+		}
+		
+		//positions are local to hand
+		arm.arm.SetPosition(0, arm.hand.InverseTransformPoint(arm.armAttachPoint.position));
+		arm.arm.SetPosition(2, Vector2.zero);
+
+		if (float.IsNaN(targetMidPoint.x) || float.IsNaN(targetMidPoint.y))
+			targetMidPoint = 0.5f * arm.arm.GetPosition(0);
+
+		//if currentMidPoint is on the oppoisite side of the start position than target midpoint, clamp it to the correct side
+		Vector2 tangent = -TripleCross(targetMidPoint - startPos, controller.Motor.UpDirection, controller.Motor.UpDirection).normalized;
+		Vector2 currentMidPoint = arm.hand.TransformPoint(arm.arm.GetPosition(1));
+		Plane p = new Plane(tangent, arm.armAttachPoint.position);
+		if (!p.GetSide(currentMidPoint))
+		{
+			currentMidPoint = p.ClosestPointOnPlane(currentMidPoint);
+		}
+
+		Vector2 midPoint = arm.hand.InverseTransformPoint(Vector2.MoveTowards(currentMidPoint, targetMidPoint, elbowSpeed * Time.deltaTime));
+		arm.arm.SetPosition(1, midPoint);
+
+	}
+
+	//Perpendicular in direction is (direction x line) x line
+	Vector2 TripleCross(Vector2 a, Vector2 b, Vector2 c)
+	{
+		float crossValue = a.x * b.y - b.x * a.y;
+		return new Vector2(-crossValue * c.y, crossValue * c.x);
 	}
 
 	[System.Serializable]
@@ -394,23 +559,47 @@ public class PlayerAnimator : MonoBehaviour
 	{
 		public void Set()
 		{
-			restPoint = hand.localPosition;
-			leftPoint = armLeft.localPosition;
-			rightPoint = armRight.localPosition;
+			restPoint = armAttachPoint.InverseTransformPoint(hand.position);
 			arm = hand.GetComponent<LineRenderer>();
 			arm.useWorldSpace = false;
+			velocity = Vector2.zero;
+			rotateT = 0;
+
+			handSprite = hand.GetComponentInChildren<SpriteRenderer>();
 		}
+
+		public void SetOrdered(bool inFront)
+		{
+			if (inFront)
+			{
+				handSprite.sortingOrder = 5;
+				arm.sortingOrder = 5;
+			}
+			else
+			{
+				handSprite.sortingOrder = -5;
+				arm.sortingOrder = -5;
+			}
+		}
+
 		public Transform hand;
 		public Transform armAttachPoint;
-		public Transform armLeft;
-		public Transform armRight;
 		[System.NonSerialized]
 		public LineRenderer arm;
 		[System.NonSerialized]
-		public Vector2 restPoint;
+		public Vector2 restPoint; //points are relative to arm attach 
 		[System.NonSerialized]
-		public Vector2 leftPoint;
+		public float rotateT;
 		[System.NonSerialized]
-		public Vector2 rightPoint;
+		public Vector2 velocity;
+		[System.NonSerialized]
+		public bool bendDirectionIsLeft;
+		[System.NonSerialized]
+		public Vector2 handVelocity;
+		[System.NonSerialized]
+		public bool isLeftArm;
+
+		[System.NonSerialized]
+		SpriteRenderer handSprite;
 	}
 }
