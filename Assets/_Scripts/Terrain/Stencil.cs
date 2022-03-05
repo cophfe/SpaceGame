@@ -11,9 +11,10 @@ public enum StencilType : int
 
 public enum StencilModifierType 
 {
-	Set,
-	Add,
+	Fill,
+	Delete,
 	AddOvertime,
+	RemoveOvertime,
 	Count
 }
 
@@ -23,7 +24,7 @@ public abstract class Stencil
 	//the radius of the stencil
 	public float Radius { get => radius; set => radius = Mathf.Max(value,0); }
 	//the stencil modifier type
-	public StencilModifierType ModifierType { get; set; } = StencilModifierType.Set;
+	public StencilModifierType ModifierType { get; set; } = StencilModifierType.Fill;
 	//the centre position of the stencil
 	public Vector2 Position { get; set; }
 	/*
@@ -32,7 +33,7 @@ public abstract class Stencil
 		Add: what amount will be added
 		AddOvertime: what amount will be added * deltaTime
 	*/
-	public float Strength { get => strength; set => strength = Mathf.Clamp(value, -1, 1); } 
+	public float Strength { get => strength; set => strength = Mathf.Clamp01(value); } 
 	#endregion
 
 	float strength;
@@ -48,6 +49,7 @@ public abstract class Stencil
 	public abstract StencilType StencilType { get; }
 
 	public abstract void Apply(ref Voxel voxel, Vector2 position);
+	protected delegate void ApplyFunctions(ref Voxel voxel, Vector2 position, Stencil stencil);
 
 	#region Readonly Properties
 	public float XStart { get { return Position.x - Radius; } }
@@ -70,22 +72,45 @@ public class SquareStencil : Stencil
 
 	public override void Apply(ref Voxel voxel, Vector2 position)
 	{
-		if (position.x >= XStart && position.x <= XEnd && position.y >= YStart && position.y <= YEnd)
+		applyFuncs[(int)ModifierType](ref voxel, position, this);
+	}
+
+	#region ApplyFunctions
+
+	static ApplyFunctions[] applyFuncs = new ApplyFunctions[] { ApplyFill, ApplyDelete, ApplyAdd, ApplyRemove };
+
+	static void ApplyFill(ref Voxel voxel, Vector2 position, Stencil stencil)
+	{
+		if (position.x >= stencil.XStart && position.x <= stencil.XEnd && position.y >= stencil.YStart && position.y <= stencil.YEnd)
 		{
-			switch (ModifierType)
-			{
-				case StencilModifierType.Set:
-					voxel.value = Mathf.Max(Strength, 0);
-					break;
-				case StencilModifierType.Add:
-					voxel.value = Mathf.Clamp01(voxel.value + Strength);
-					break;
-				case StencilModifierType.AddOvertime:
-					voxel.value = Mathf.Clamp01(voxel.value + Strength * Time.deltaTime);
-					break;
-			}
+			voxel.value = Mathf.Max(stencil.Strength, 0);
 		}
 	}
+
+	static void ApplyDelete(ref Voxel voxel, Vector2 position, Stencil stencil)
+	{
+		if (position.x >= stencil.XStart && position.x <= stencil.XEnd && position.y >= stencil.YStart && position.y <= stencil.YEnd)
+		{
+			voxel.value = 0;
+		}
+	}
+
+	static void ApplyAdd(ref Voxel voxel, Vector2 position, Stencil stencil)
+	{
+		if (position.x >= stencil.XStart && position.x <= stencil.XEnd && position.y >= stencil.YStart && position.y <= stencil.YEnd)
+		{
+			voxel.value = Mathf.Clamp01(voxel.value + stencil.Strength * Time.deltaTime);
+		}
+	}
+
+	static void ApplyRemove(ref Voxel voxel, Vector2 position, Stencil stencil)
+	{
+		if (position.x >= stencil.XStart && position.x <= stencil.XEnd && position.y >= stencil.YStart && position.y <= stencil.YEnd)
+		{
+			voxel.value = Mathf.Clamp01(voxel.value - stencil.Strength * Time.deltaTime);
+		}
+	}
+	#endregion
 }
 
 public class CircleStencil : Stencil
@@ -97,20 +122,40 @@ public class CircleStencil : Stencil
 
 	public override void Apply(ref Voxel voxel, Vector2 position)
 	{
-		float x = position.x - Position.x;
-		float y = position.y - Position.y;
-		
-		switch (ModifierType)
-		{
-			case StencilModifierType.Set:
-				voxel.value = Mathf.Max(Strength *(Radius -  Mathf.Sqrt(x * x + y * y) + 0.5f), voxel.value);
-				break;
-			case StencilModifierType.Add:
-				voxel.value = Mathf.Clamp01(voxel.value + Strength * (Radius - Mathf.Sqrt(x * x + y * y) + 0.5f));
-				break;
-			case StencilModifierType.AddOvertime:
-				voxel.value = Mathf.Clamp01(voxel.value + Strength * (Radius - Mathf.Sqrt(x * x + y * y) + 0.5f) * Time.deltaTime);
-				break;
-		}
+		applyFuncs[(int)ModifierType](ref voxel, position, this);
 	}
+
+	#region ApplyFunctions
+
+	static ApplyFunctions[] applyFuncs = new ApplyFunctions[] { ApplyFill, ApplyDelete, ApplyAdd, ApplyRemove };
+
+	static void ApplyFill(ref Voxel voxel, Vector2 position, Stencil stencil)
+	{
+		float x = position.x - stencil.Position.x;
+		float y = position.y - stencil.Position.y;
+		voxel.value = Mathf.Max(stencil.Strength * (stencil.Radius - Mathf.Sqrt(x * x + y * y) + 0.5f), voxel.value);
+	}
+
+	static void ApplyDelete(ref Voxel voxel, Vector2 position, Stencil stencil)
+	{
+		float x = position.x - stencil.Position.x;
+		float y = position.y - stencil.Position.y;
+		voxel.value = Mathf.Min(stencil.Strength * (Mathf.Sqrt(x * x + y * y - stencil.Radius) + 0.5f), voxel.value);
+	}
+
+	static void ApplyAdd(ref Voxel voxel, Vector2 position, Stencil stencil)
+	{
+		float x = position.x - stencil.Position.x;
+		float y = position.y - stencil.Position.y;
+		voxel.value = Mathf.Clamp01(voxel.value + Mathf.Max(stencil.Strength * (stencil.Radius - Mathf.Sqrt(x * x + y * y) + 0.5f) * Time.deltaTime, 0));
+	}
+
+	static void ApplyRemove(ref Voxel voxel, Vector2 position, Stencil stencil)
+	{
+		float x = position.x - stencil.Position.x;
+		float y = position.y - stencil.Position.y;
+		voxel.value = Mathf.Clamp01(voxel.value - Mathf.Max(stencil.Strength * (stencil.Radius - Mathf.Sqrt(x * x + y * y) + 0.5f) * Time.deltaTime,0));
+	}
+
+	#endregion
 }

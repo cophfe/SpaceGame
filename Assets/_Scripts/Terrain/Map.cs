@@ -10,6 +10,7 @@ public class Map : MonoBehaviour
 	[SerializeField] int cellResolution = 32;
 	[SerializeField] [Min(0.001f)] float cellSize = 1.0f;
 	[SerializeField] [Range(0, 1)] float valueThreshold = 0.5f;
+	[SerializeField] Generator mapGenerator;
 
 	//Temp exposed
 	[Range(0.000f, 1)] public float perlinSampleSize = 0.1f;
@@ -152,6 +153,7 @@ public class Map : MonoBehaviour
 	public Chunk[,] Chunks { get => chunks; }
 }
 
+[System.Serializable]
 public struct Bounds2D
 {
 	public Vector2 bottomLeft;

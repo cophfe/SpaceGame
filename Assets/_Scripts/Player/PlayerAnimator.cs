@@ -110,8 +110,8 @@ public class PlayerAnimator : MonoBehaviour
 			PlayerPointingLeft = PlayerHorizontalSpeed < 0;
 		}
 
-		MoveFoot(ref leftFoot, leftTurnToStep);
-		MoveFoot(ref rightFoot, !leftTurnToStep);
+		MoveFoot(ref leftFoot, leftTurnToStep, ref rightFoot);
+		MoveFoot(ref rightFoot, !leftTurnToStep, ref leftFoot);
 		CalculateLeg(ref leftFoot);
 		CalculateLeg(ref rightFoot);
 
@@ -181,7 +181,7 @@ public class PlayerAnimator : MonoBehaviour
 		lastPos = newPos;
 	}
 
-	void MoveFoot(ref FootInfo foot, bool canStep)
+	void MoveFoot(ref FootInfo foot, bool canStep, ref FootInfo otherFoot)
 	{
 		RaycastHit2D hit = Physics2D.CircleCast(foot.footAttachment.position, footRadius, - controller.Motor.UpDirection, legTopLength + legBottomLength - footRadius + footScanExtraDist, footAttachmentMask.value);
 
@@ -227,8 +227,7 @@ public class PlayerAnimator : MonoBehaviour
 
 		if (foot.attachedToGround)
 		{
-			Vector2 upTangent = Vector2.Perpendicular(controller.Motor.UpDirection);
-			float horizontalDistance = Mathf.Abs(Vector2.Dot(upTangent, foot.target - hitPoint));
+			float horizontalDistance = Mathf.Abs(Vector2.Dot(controller.Motor.RightDirection, foot.target - hitPoint));
 
 			//if standing still, make sure feet are under player
 			if (canStep && !PlayerIsWalking && (foot.target - hitPoint).SqrMagnitude() > 0.01f)
@@ -241,6 +240,7 @@ public class PlayerAnimator : MonoBehaviour
 				foot.attachedToGround = false;
 
 				foot.bendDirectionIsLeft = PlayerPointingLeft;
+
 			}
 			//if the foot has strode to far from the objective, reasses
 			else if ((canStep && (foot.target - hitPoint).SqrMagnitude() > strideLength * strideLength)
@@ -264,6 +264,11 @@ public class PlayerAnimator : MonoBehaviour
 					foot.target = hitPoint;
 					foot.point = hitPoint;
 				}
+			}
+			//if, while standing still, this foot is in the right position but the other foot isn't, allow the other foot to step
+			else if (canStep && !PlayerIsWalking && (otherFoot.target - hitPoint).SqrMagnitude() > 0.01f)
+			{
+				leftTurnToStep = !leftTurnToStep;
 			}
 		}
 		else

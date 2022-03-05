@@ -25,7 +25,7 @@ public class ChunkDrawer : MonoBehaviour
 
 	private void Awake()
 	{
-		stencil = new SquareStencil(1.0f, 2, StencilModifierType.Set);
+		stencil = new SquareStencil(1.0f, 2, StencilModifierType.Fill);
 		UpdateText();
 	}
 
@@ -94,7 +94,7 @@ public class ChunkDrawer : MonoBehaviour
 	{
 		if (ctx.performed)
 		{
-			stencil.Strength = -stencil.Strength;
+			stencil.Strength = stencil.Strength == 1 ? 0.5f : 1.0f;
 			UpdateText();
 		}
 	}
@@ -153,14 +153,17 @@ public class ChunkDrawer : MonoBehaviour
 
 		switch (stencil.ModifierType)
 		{
-			case StencilModifierType.Set:
-				modText.text = "Set";
+			case StencilModifierType.Fill:
+				modText.text = "Fill";
 				break;
-			case StencilModifierType.Add:
-				modText.text = "Add";
+			case StencilModifierType.Delete:
+				modText.text = "Delete";
 				break;
 			case StencilModifierType.AddOvertime:
-				modText.text = "AddOvertime";
+				modText.text = "Add";
+				break;
+			case StencilModifierType.RemoveOvertime:
+				modText.text = "Remove";
 				break;
 			default:
 				modText.text = "Error";
