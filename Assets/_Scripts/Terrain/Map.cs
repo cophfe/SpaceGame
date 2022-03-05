@@ -11,6 +11,7 @@ public class Map : MonoBehaviour
 	[SerializeField] [Min(0.001f)] float cellSize = 1.0f;
 	[SerializeField] [Range(0, 1)] float valueThreshold = 0.5f;
 	[SerializeField] Generator mapGenerator;
+	[SerializeField] PhysicsMaterial2D physicsMaterial;
 
 	//Temp exposed
 	[Range(0.000f, 1)] public float perlinSampleSize = 0.1f;
@@ -151,6 +152,7 @@ public class Map : MonoBehaviour
 	public float ChunkSize { get; private set; }
 	public float ValueThreshold { get => valueThreshold; }
 	public Chunk[,] Chunks { get => chunks; }
+	public PhysicsMaterial2D Material { get => physicsMaterial; }
 }
 
 [System.Serializable]

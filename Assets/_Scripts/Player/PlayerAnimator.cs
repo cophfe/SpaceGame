@@ -314,7 +314,16 @@ public class PlayerAnimator : MonoBehaviour
 	{
 		Vector2 hitTangent = Vector3.Cross(Vector3.Cross(hitNormal, controller.RB.velocity), hitNormal).normalized;
 		float strideVel = Time.fixedDeltaTime * bodySpeedStrideChange * Vector2.Dot(controller.RB.velocity, hitTangent);
-		return hitPoint + hitTangent * strideLength + hitTangent * (strideVel);
+		Vector2 newHitPoint = hitPoint + hitTangent * strideLength + hitTangent * (strideVel);
+
+		//check if there is ground above the foot, if so place foot on ground
+		float length = legTopLength + legBottomLength + footScanExtraDist;
+		RaycastHit2D hit = Physics2D.Raycast(newHitPoint + hitNormal * length, -hitNormal, length, footAttachmentMask);
+		if (hit)
+		{
+			return hit.point;
+		}
+		return newHitPoint;
 	}
 
 	//based on https://www.alanzucconi.com/2018/05/02/ik-2d-1/
@@ -330,7 +339,9 @@ public class PlayerAnimator : MonoBehaviour
 		{
 			Vector2 deltaNorm = (foot.point - startPos).normalized;
 
+			//if (controller.Motor.State != PlayerMotor.MovementState.GROUNDED || PlayerIsWalking || foot.attachedToGround)
 			foot.point = startPos + deltaNorm * (legTopLength + legBottomLength);
+
 			ClampFootPoint(ref foot);
 
 			foot.foot.position = foot.point;
@@ -348,7 +359,10 @@ public class PlayerAnimator : MonoBehaviour
 
 			}
 
-			foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, rotMod * -Vector2.Angle(Vector2.up, controller.Motor.UpDirection)), footRotateSpeed * Time.deltaTime);
+			if (!foot.attachedToGround)
+				foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, rotMod * -Vector2.Angle(Vector2.up, controller.Motor.UpDirection)), footRotateSpeed * Time.deltaTime);
+			else
+				foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, foot.normal)), footRotateSpeed * Time.deltaTime);
 
 		}
 		else
@@ -377,7 +391,7 @@ public class PlayerAnimator : MonoBehaviour
 			if (!foot.attachedToGround)
 				foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, rotMod * - Vector2.Angle(Vector2.up, (targetMidPoint - foot.point).normalized)), footRotateSpeed * Time.deltaTime);
 			else
-				foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, rotMod  *- Vector2.Angle(Vector2.up, controller.Motor.UpDirection)), footRotateSpeed * Time.deltaTime);
+				foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, foot.normal)), footRotateSpeed * Time.deltaTime);
 		}
 
 		//positions are local to foot
@@ -422,7 +436,7 @@ public class PlayerAnimator : MonoBehaviour
 		}
 		else if (PlayerIsWalking)
 		{
-			arm.bendDirectionIsLeft = PlayerHorizontalSpeed > 0;
+			arm.bendDirectionIsLeft = !PlayerPointingLeft;
 			arm.SetOrdered(arm.bendDirectionIsLeft == !arm.isLeftArm); //this seems like a slow thing to set every frame but what do I know
 
 			Vector2 armDelta = arm.armAttachPoint.TransformPoint(arm.restPoint) - arm.armAttachPoint.position;

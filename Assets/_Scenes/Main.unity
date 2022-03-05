@@ -1189,102 +1189,22 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 487585265, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: orthographic size
-      value: 9
-      objectReference: {fileID: 0}
     - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: gravity
-      value: -20
+      propertyPath: airJumps
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
       propertyPath: slopeLimit
-      value: 50
+      value: 74
       objectReference: {fileID: 0}
     - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: springHeight
-      value: 0.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: slopeFriction
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: springDamping
-      value: 18
+      propertyPath: jumpImpulse
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
       propertyPath: maxAttachAngle
-      value: 55
+      value: 70
       objectReference: {fileID: 0}
-    - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: totalPlayerHeight
-      value: 2.875
-      objectReference: {fileID: 0}
-    - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: groundMagnetHeight
-      value: 0.2
-      objectReference: {fileID: 0}
-    - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: slopeGroundFriction
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: groundDetectAddition
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: groundDetectionRadius
-      value: 0.35
-      objectReference: {fileID: 0}
-    - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: groundMagnetDistanceModifer
-      value: 0.4
-      objectReference: {fileID: 0}
-    - target: {fileID: 935210441001715224, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_Material
-      value: 
-      objectReference: {fileID: 6200000, guid: d36fc00aa21ce334b8f035b72c20e201, type: 2}
-    - target: {fileID: 3262664139233471761, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: db3d502bb2e33ea478222ead6959ff66, type: 2}
-    - target: {fileID: 3262664139798567595, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_SortingLayer
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3262664139798567595, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_SortingLayerID
-      value: 1710001597
-      objectReference: {fileID: 0}
-    - target: {fileID: 3262664139798567595, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: db3d502bb2e33ea478222ead6959ff66, type: 2}
-    - target: {fileID: 3262664140300583015, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_Size.y
-      value: 2.345
-      objectReference: {fileID: 0}
-    - target: {fileID: 3262664140300583015, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_Offset.y
-      value: 0.28
-      objectReference: {fileID: 0}
-    - target: {fileID: 3262664140353463582, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: db3d502bb2e33ea478222ead6959ff66, type: 2}
-    - target: {fileID: 3262664140495406915, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_SortingLayer
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3262664140495406915, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_SortingLayerID
-      value: 1710001597
-      objectReference: {fileID: 0}
-    - target: {fileID: 3262664140495406915, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: db3d502bb2e33ea478222ead6959ff66, type: 2}
     - target: {fileID: 3824490346238491120, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
       propertyPath: m_Name
       value: Player
@@ -1334,16 +1254,12 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5234643540153488132, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: kneeSpeed
-      value: 32.56
-      objectReference: {fileID: 0}
-    - target: {fileID: 5234643540153488132, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: footRadius
-      value: 0.1
+      propertyPath: footRotateSpeed
+      value: 560
       objectReference: {fileID: 0}
     - target: {fileID: 5234643540153488132, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
       propertyPath: footScanExtraDist
-      value: 0.2
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 437d2c077f4f227438164cef38c4340a, type: 3}

@@ -574,6 +574,8 @@ public class Chunk : MonoBehaviour
 
 			//now add new collider
 			EdgeCollider2D collider = gameObject.AddComponent<EdgeCollider2D>();
+			collider.sharedMaterial = map.Material;
+
 			collider.SetPoints(currentEdgeList);
 			colliders.Add(collider);
 		}

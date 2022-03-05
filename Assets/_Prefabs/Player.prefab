@@ -60,7 +60,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 9
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -360,7 +360,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: db3d502bb2e33ea478222ead6959ff66, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -681,7 +681,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: db3d502bb2e33ea478222ead6959ff66, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -699,8 +699,8 @@ LineRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1710001597
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Positions:
   - {x: 0, y: 0.63829064, z: 0}
@@ -970,8 +970,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 0.8, y: 1.7}
+  m_Offset: {x: 0, y: 0.28}
+  m_Size: {x: 0.8, y: 2.345}
   m_Direction: 0
 --- !u!1 &3262664140353463580
 GameObject:
@@ -1075,7 +1075,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: db3d502bb2e33ea478222ead6959ff66, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1288,7 +1288,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: db3d502bb2e33ea478222ead6959ff66, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1306,8 +1306,8 @@ LineRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1710001597
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Positions:
   - {x: 0, y: 0.63829064, z: 0}
@@ -1626,23 +1626,32 @@ MonoBehaviour:
   targetSpeed: 14
   maxVelocity: 100
   airControlModifier: 0.8
-  slopeLimit: 70
+  maxWalkAngle: 40
   groundFriction: 0
   airFriction: 0.3
-  jumpImpulse: 5
+  jumpImpulse: 9
   jumpDuration: 0.3
-  airJumps: 0
+  airJumps: 1
   jumpBufferTime: 0.1
   jumpCoyoteTime: 0.1
-  gravity: -10
-  groundDetectionRadius: 0.4
-  totalPlayerHeight: 2.33
-  groundDetectAddition: 0
+  gravity: -20
+  slopeLimit: 74
+  groundDetectionRadius: 0.35
+  groundDetectAddition: 0.1
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 8
-  springHeight: 0.9
-  springDamping: 11.4
+  springRestHeight: 0.575
+  springHeight: 0.6
+  springDamping: 18
+  groundMagnetDistanceModifer: 0.4
+  groundMagnetHeight: 0.2
+  maxAttachAngle: 70
+  slopeGroundFriction: 5
+  slopeFriction: 4
+  slopeGravityMod: 1
+  maxRotationSpeed: 0.4
+  rotationSmoothSpeed: 0.1
 --- !u!114 &5234643540153488132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1685,14 +1694,14 @@ MonoBehaviour:
     footAttachment: {fileID: 3262664139704461256}
   strideLength: 0.25
   footSpeed: 6
-  kneeSpeed: 10
-  footRotateSpeed: 240
+  kneeSpeed: 32.56
+  footRotateSpeed: 560
   strideHeight: 0.11
   bodySpeedStrideChange: 1
   bodySpeedStrideChangeInAir: 0.2
   legTopLength: 0.3
   legBottomLength: 0.35
-  footScanExtraDist: 0.1
+  footScanExtraDist: 1
   footRadius: 0.1
   minDistance: 0.25
   bodySpeedFootModifier: 1
@@ -1816,7 +1825,7 @@ Rigidbody2D:
   m_LinearDrag: 1
   m_AngularDrag: 0.05
   m_GravityScale: 0
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: d36fc00aa21ce334b8f035b72c20e201, type: 2}
   m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0

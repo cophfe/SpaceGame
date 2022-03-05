@@ -12,6 +12,7 @@ public class PlayerMotor : MonoBehaviour
 	[SerializeField] float targetSpeed = 10; //Target velocity of the player's movement velocity when horizontal input is more than 0
 	[SerializeField] float maxVelocity = 100; //The overall maximum velocity of the player
 	[SerializeField] float airControlModifier = 0.8f; //The percentage of acceleration used while in the air
+	[SerializeField] float maxWalkAngle = 40f; //The percentage of acceleration used while in the air
 	//Friction
 	[SerializeField] float groundFriction = 0.4f; //The amount of velocity removed every second on the ground
 	[SerializeField] float airFriction = 0.3f; //The amount of velocity removed every second in the air
@@ -53,6 +54,7 @@ public class PlayerMotor : MonoBehaviour
 	Vector2 upDirection = Vector2.up;
 	Vector2 rightDirection = Vector2.right; //I use it so much, might as well just cache it
 	//Velocity
+	Vector2 inputHorizontalDirection = Vector2.right;
 	Vector2 targetVelocity; // the target velocity based on player input
 	Vector2 movementVelocity; //the part of velocity that tries to get to the target velocity
 	Vector2 forcesVelocity; //other parts of velocity (jumping, drag, spring force)
@@ -128,11 +130,6 @@ public class PlayerMotor : MonoBehaviour
 		UpdateMovementVector();
 		UpdateForcesVector();
 
-		//if (state == MovementState.SLIDING && Vector2.Dot(TotalVelocity, upDirection) < 0) //if sliding and going downwards, ground magnet replaces spring (spring is too unstable)
-		//{
-		//	groundMagnetOffset = (springRestHeight - groundDistance);
-		//}
-
 		//change player velocity
 		controller.RB.velocity = movementVelocity + forcesVelocity; //might need to use a ground offset to keep player grounded when going down slopes
 		//clamp speed
@@ -190,7 +187,6 @@ public class PlayerMotor : MonoBehaviour
 
 			if (enableGroundMagnet && groundAngle < maxAttachAngle) 
 			{
-				
 				float offset = (groundMagnetHeight - springRestHeight - groundDistance);
 				//if the offset would move the player downward
 				if (offset < 0)
@@ -385,9 +381,17 @@ public class PlayerMotor : MonoBehaviour
 		if (state == MovementState.GROUNDED)
 		{
 			Vector2 tangent = Vector2.Perpendicular(groundNormal);
-			targetVelocity = GetInputDir() * tangent * -targetSpeed;
+			int inputDir = GetInputDir();
 
-			Debug.DrawRay(groundPoint, Vector2.Perpendicular(groundNormal), Color.red);
+			//the maximum up angle is maxWalkAngle
+			if (Vector2.SignedAngle(System.Math.Sign(Vector2.Dot(rightDirection, movementVelocity)) * groundNormal, upDirection) <0)
+			{
+				tangent = Vector3.RotateTowards(-rightDirection, tangent, maxWalkAngle * Mathf.Deg2Rad, 0);
+			}
+			inputHorizontalDirection = tangent;
+
+			targetVelocity = inputDir * tangent * -targetSpeed;
+
 			float currentAcceleration = acceleration;
 
 			//make it turn around fast
@@ -396,10 +400,7 @@ public class PlayerMotor : MonoBehaviour
 				currentAcceleration *= 2;
 			}
 
-			Vector2 vel = Vector2.Dot(tangent, controller.RB.velocity) * tangent;
-
 			movementVelocity = Vector2.MoveTowards(movementVelocity, targetVelocity, currentAcceleration * Time.deltaTime);
-
 			//friction applied 
 			movementVelocity += GetMoveStep(movementVelocity, Vector3.zero, groundFriction * Time.deltaTime);
 		}
@@ -455,7 +456,12 @@ public class PlayerMotor : MonoBehaviour
 		//spring stuff
 		//ground distance along spring normal
 		float springDist = Vector2.Dot(UpDirection, transform.TransformPoint(rayCastPoint)) - Vector2.Dot(UpDirection, groundPoint);
-		if (state == MovementState.GROUNDED && springDist < springHeight)
+
+		if (state == MovementState.SLIDING)//&& Vector2.Dot(TotalVelocity, upDirection) < 0) //if sliding and going downwards, ground magnet replaces spring (spring is too unstable)
+		{
+			//groundMagnetOffset = (springRestHeight - groundDistance);
+		}
+		else if (isGrounded && springDist < springHeight)
 		{
 			float overExtention = springHeight - springDist;
 
@@ -501,13 +507,25 @@ public class PlayerMotor : MonoBehaviour
 
 	private void OnCollisionStay2D(Collision2D collision)
 	{
+		OnCollision(collision);
+	}
+	private void OnCollisionEnter2D(Collision2D collision)
+	{
+		OnCollision(collision);
+	}
+	private void OnCollisionExit2D(Collision2D collision)
+	{
+		OnCollision(collision);
+	}
+
+	void OnCollision (Collision2D collision)
+	{
 		//this is a terrible solution
 
 		//first take velocity from ground movement and put it into movement velocity 
 		if (isGrounded)
 		{
-			Vector2 groundTangent = Vector2.Perpendicular(groundNormal);
-			movementVelocity = Vector2.Dot(controller.RB.velocity, groundTangent) * groundTangent;
+			movementVelocity = Vector2.Dot(controller.RB.velocity, inputHorizontalDirection) * inputHorizontalDirection;
 		}
 		else
 		{
