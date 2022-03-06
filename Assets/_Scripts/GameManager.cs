@@ -5,14 +5,14 @@ using UnityEngine;
 public class GameManager : Singleton<GameManager>
 {
 	//there could be multiple maps in the scene
-	public List<Map> Maps { get; private set;}
+	public List<PixelWorld> Worlds { get; private set;}
 	public Camera MainCamera { get; private set; }
 	public PlayerController Player { get; private set; }
 
 	new private void Awake()
 	{
 		base.Awake();
-		Maps = new List<Map>();
+		Worlds = new List<PixelWorld>();
 		MainCamera = Camera.main;
 	}
 
@@ -22,11 +22,11 @@ public class GameManager : Singleton<GameManager>
 	}
 
 	//Maps should register themselves on Start()
-	public bool RegisterMap(Map map)
+	public bool RegisterMap(PixelWorld map)
 	{
 		if (map != null)
 		{
-			Maps.Add(map);
+			Worlds.Add(map);
 			return true;
 		}
 		return false;

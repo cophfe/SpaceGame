@@ -8,6 +8,8 @@ using TMPro;
 public class ChunkDrawer : MonoBehaviour
 {
 	#region Editors
+	[SerializeField, Min(0)] float modifyStrength = 4;
+	[SerializeField, Min(0)] float modifyRemoveStrength = 4;
 	[SerializeField] Transform[] stencilVisualisations;
 	[SerializeField] Material stencilMaterial;
 	[SerializeField] bool snapToGrid = false;
@@ -18,44 +20,50 @@ public class ChunkDrawer : MonoBehaviour
 	#endregion
 
 	#region Private
-	Stencil stencil;
+	PixelModifier modifier;
 	//input
 	bool actionButtonHeld = false;
 	#endregion
 
 	private void Awake()
 	{
-		stencil = new SquareStencil(1.0f, 2, StencilModifierType.Fill);
+		modifier = new PixelModifier(modifyStrength, 2, ModifierType.AddOvertime, new PixelStencilCircle());
 		UpdateText();
 	}
 
+	private void OnValidate()
+	{
+		if (modifier != null)
+			modifier.Strength = modifyStrength;
+	}
 
 	private void Update()
 	{
 		bool isColliding = false;
 
-		stencil.Position = GameManager.Instance.MainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+		modifier.Centre = GameManager.Instance.MainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
-		foreach (var map in GameManager.Instance.Maps)
+		foreach (var world in GameManager.Instance.Worlds)
 		{
-			if (map.IsColliding(stencil))
+			modifier.World = world;
+			if (world.IsColliding(modifier))
 			{
 				isColliding = true;
 				//should intelligently choose the map instead of just choosing the first map found
 
-				Vector2 stencilPos = map.transform.InverseTransformPoint(stencil.Position);
+				Vector2 stencilPos = world.transform.InverseTransformPoint(modifier.Centre);
 				//stencilPos += 0.5f * map.Size;
 				if (snapToGrid)
 				{
-					stencilPos.x = ((int)(stencilPos.x / map.CellSize)) * map.CellSize;
-					stencilPos.y = ((int)(stencilPos.y / map.CellSize)) * map.CellSize;
+					stencilPos.x = ((int)(stencilPos.x / world.CellSize)) * world.CellSize;
+					stencilPos.y = ((int)(stencilPos.y / world.CellSize)) * world.CellSize;
 				}
-				stencilPos = map.transform.TransformPoint(stencilPos);
-				stencil.Position = stencilPos;
-				//now apply changes to voxelMap
+				stencilPos = world.transform.TransformPoint(stencilPos);
+				modifier.Centre = stencilPos;
+				//now apply changes to pixel world
 				if (EvaluateActionHeld())
 				{
-					map.ApplyStencil(stencil);
+					world.ApplyStencil(modifier);
 				}
 				break;
 			}
@@ -67,9 +75,9 @@ public class ChunkDrawer : MonoBehaviour
 	void UpdateVisualisation(bool enabled)
 	{
 
-		Transform visualization = stencilVisualisations[(int)stencil.StencilType];
-		visualization.position = new Vector3(stencil.Position.x, stencil.Position.y, -2);
-		visualization.localScale = Vector2.one * stencil.Radius * 2f;
+		Transform visualization = stencilVisualisations[(int)modifier.Stencil.Type];
+		visualization.position = new Vector3(modifier.Centre.x, modifier.Centre.y, -2);
+		visualization.localScale = Vector2.one * modifier.Radius * 2f;
 		visualization.gameObject.SetActive(enabled);
 	}
 
@@ -90,26 +98,17 @@ public class ChunkDrawer : MonoBehaviour
 		actionButtonHeld = ctx.phase == InputActionPhase.Performed;
 	}
 
-	public void OnSwitchFill(InputAction.CallbackContext ctx)
-	{
-		if (ctx.performed)
-		{
-			stencil.Strength = stencil.Strength == 1 ? 0.5f : 1.0f;
-			UpdateText();
-		}
-	}
-
 	public void OnChangeRadius(InputAction.CallbackContext ctx)
 	{
 		if (ctx.performed)
 		{
 			if (ctx.ReadValue<float>() > 0)
 			{
-				stencil.Radius = stencil.Radius + 1;
+				modifier.Radius = modifier.Radius + 1;
 			}
 			else
 			{
-				stencil.Radius = stencil.Radius - 1;
+				modifier.Radius = modifier.Radius - 1;
 			}
 			UpdateText();
 		}
@@ -120,16 +119,16 @@ public class ChunkDrawer : MonoBehaviour
 		if (ctx.performed)
 		{
 			//change stencil visualisation
-			stencilVisualisations[(int)stencil.StencilType].gameObject.SetActive(false);
+			stencilVisualisations[(int)modifier.Stencil.Type].gameObject.SetActive(false);
 
 			//if is a circle, switch to square
-			if (stencil.StencilType == StencilType.Circle)
+			if (modifier.Stencil.Type == StencilType.Circle)
 			{
-				stencil = new SquareStencil(stencil.Strength, stencil.Radius, stencil.ModifierType);
+				modifier.Stencil = new PixelStencilRectangle();
 			}
 			else
 			{
-				stencil = new CircleStencil(stencil.Strength, stencil.Radius, stencil.ModifierType);
+				modifier.Stencil = new PixelStencilCircle();
 			}
 			UpdateText();
 		}
@@ -140,29 +139,39 @@ public class ChunkDrawer : MonoBehaviour
 	{
 		if (ctx.performed)
 		{
-			stencil.ModifierType = (StencilModifierType)((int)(stencil.ModifierType + 1) % (int)StencilModifierType.Count);
+			if (modifier.Type == ModifierType.AddOvertime)
+			{
+				modifier.Type = ModifierType.RemoveOvertime;
+				modifier.Strength = modifyRemoveStrength;
+			}
+			else
+			{
+				modifier.Type = ModifierType.AddOvertime;
+				modifier.Strength = modifyStrength;
+			}
+
+			//modifier.Type = (ModifierType)((int)(modifier.Type + 1) % (int)ModifierType.Count);
 			UpdateText();
 		}
 	}
 
 	void UpdateText()
 	{
+		radText.text = modifier.Radius.ToString();
+		strText.text = modifier.Strength.ToString();
 
-		radText.text = stencil.Radius.ToString();
-		strText.text = stencil.Strength.ToString();
-
-		switch (stencil.ModifierType)
+		switch (modifier.Type)
 		{
-			case StencilModifierType.Fill:
+			case ModifierType.Fill:
 				modText.text = "Fill";
 				break;
-			case StencilModifierType.Delete:
+			case ModifierType.Delete:
 				modText.text = "Delete";
 				break;
-			case StencilModifierType.AddOvertime:
+			case ModifierType.AddOvertime:
 				modText.text = "Add";
 				break;
-			case StencilModifierType.RemoveOvertime:
+			case ModifierType.RemoveOvertime:
 				modText.text = "Remove";
 				break;
 			default:
@@ -170,7 +179,7 @@ public class ChunkDrawer : MonoBehaviour
 				break;
 		}
 
-		if (stencil.StencilType == StencilType.Circle)
+		if (modifier.Stencil.Type == StencilType.Circle)
 		{
 			shaText.text = "Circle";
 		}
