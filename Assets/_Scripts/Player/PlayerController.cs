@@ -24,14 +24,10 @@ public class PlayerController : MonoBehaviour
 		Motor = GetComponentInChildren<PlayerMotor>();
 		Animator = GetComponentInChildren<PlayerAnimator>();
 		RB = GetComponentInChildren<Rigidbody2D>();
-	}
-	private void Start()
-	{
+
 		if (GameManager.Instance)
 			GameManager.Instance.RegisterPlayerController(this);
 	}
-
-
 
 	#region Input
 

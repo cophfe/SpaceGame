@@ -1,4 +1,5 @@
 ﻿#define TIMED
+//#define USE_POLYGONS
 
 using System.Collections;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ public class PixelChunk : MonoBehaviour
 	//Private
 	Pixel[,] pixels = null;
 	Mesh mesh;
-	List<Vector3> vertices = new List<Vector3>(); //maybe shouldn't store these (although it will increase performance)
+	List<Vector3> vertices = new List<Vector3>(); //maybe shouldn't store these (although it will increase performance slightly)
 	List<int> triangles = new List<int>();
 	TreeNode tree;
 	PixelWorld world;
@@ -24,7 +25,11 @@ public class PixelChunk : MonoBehaviour
 
 	//collision
 	//all colliders for this chunk
+#if USE_POLYGONS
+	List<PolygonCollider2D> colliders = null;
+#else
 	List<EdgeCollider2D> colliders = null;
+#endif
 	//holds information about all edge nodes that haven't been used to make a collider yet
 	List<EdgeNodeData> edges = null;
 
@@ -135,7 +140,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y - 1].value >= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y > 0)
+			else if (LeftValid)
 			{
 				yes |= Down.Pixels[x - 1, world.CellResolution].value >= world.ValueThreshold;
 
@@ -148,14 +153,14 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y + 1].value >= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y < world.CellResolution)
+			else if (UpValid)
 			{
 				yes |= Up.Pixels[x - 1, 0].value >= world.ValueThreshold;
 
 				yes |= Up.Pixels[x, 0].value >= world.ValueThreshold;
 			}
 		}
-		else if (ChunkCoord.x > 0)
+		else if (LeftValid)
 		{
 			yes |= Left.Pixels[world.CellResolution, y].value >= world.ValueThreshold;
 
@@ -165,7 +170,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y - 1].value >= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y > 0)
+			else if (DownValid)
 			{
 				yes |= LeftDown.Pixels[world.CellResolution, world.CellResolution].value >= world.ValueThreshold;
 
@@ -178,7 +183,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y + 1].value >= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y < world.CellResolution)
+			else if (UpValid)
 			{
 				yes |= LeftUp.Pixels[world.CellResolution, 0].value >= world.ValueThreshold;
 
@@ -196,7 +201,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y - 1].value >= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y > 0)
+			else if (DownValid)
 			{
 				yes |= Down.Pixels[x + 1, world.CellResolution].value >= world.ValueThreshold;
 
@@ -209,14 +214,14 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y + 1].value >= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y < world.CellResolution)
+			else if (UpValid)
 			{
 				yes |= Up.Pixels[x + 1, 0].value >= world.ValueThreshold;
 
 				yes |= Up.Pixels[x, 0].value >= world.ValueThreshold;
 			}
 		}
-		else if (ChunkCoord.x < world.CellResolution)
+		else if (RightValid)
 		{
 			yes |= Right.Pixels[0, y].value >= world.ValueThreshold;
 
@@ -226,7 +231,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y - 1].value >= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y > 0)
+			else if (DownValid)
 			{
 				yes |= RightDown.Pixels[0, world.CellResolution].value >= world.ValueThreshold;
 
@@ -239,7 +244,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y + 1].value >= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y < world.CellResolution)
+			else if (UpValid)
 			{
 				yes |= RightUp.Pixels[0, 0].value >= world.ValueThreshold;
 
@@ -270,7 +275,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y - 1].value <= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y > 0)
+			else if (DownValid)
 			{
 				yes |= Down.Pixels[x - 1, world.CellResolution].value <= world.ValueThreshold;
 
@@ -283,14 +288,14 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y + 1].value <= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y < world.CellResolution)
+			else if (UpValid)
 			{
 				yes |= Up.Pixels[x - 1, 0].value <= world.ValueThreshold;
 
 				yes |= Up.Pixels[x, 0].value <= world.ValueThreshold;
 			}
 		}
-		else if (ChunkCoord.x > 0)
+		else if (LeftValid)
 		{
 			yes |= Left.Pixels[world.CellResolution, y].value <= world.ValueThreshold;
 
@@ -300,7 +305,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y - 1].value <= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y > 0)
+			else if (DownValid)
 			{
 				yes |= LeftDown.Pixels[world.CellResolution, world.CellResolution].value <= world.ValueThreshold;
 
@@ -313,7 +318,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y + 1].value <= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y < world.CellResolution)
+			else if (UpValid)
 			{
 				yes |= LeftUp.Pixels[world.CellResolution, 0].value <= world.ValueThreshold;
 
@@ -331,7 +336,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y - 1].value <= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y > 0)
+			else if (DownValid)
 			{
 				yes |= Down.Pixels[x + 1, world.CellResolution].value <= world.ValueThreshold;
 
@@ -344,14 +349,14 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y + 1].value <= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y < world.CellResolution)
+			else if (UpValid)
 			{
 				yes |= Up.Pixels[x + 1, 0].value <= world.ValueThreshold;
 
 				yes |= Up.Pixels[x, 0].value <= world.ValueThreshold;
 			}
 		}
-		else if (ChunkCoord.x < world.CellResolution)
+		else if (RightValid)
 		{
 			yes |= Right.Pixels[0, y].value <= world.ValueThreshold;
 
@@ -361,7 +366,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y - 1].value <= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y > 0)
+			else if (DownValid)
 			{
 				yes |= RightDown.Pixels[0, world.CellResolution].value <= world.ValueThreshold;
 
@@ -374,7 +379,7 @@ public class PixelChunk : MonoBehaviour
 
 				yes |= pixels[x, y + 1].value <= world.ValueThreshold;
 			}
-			else if (ChunkCoord.y < world.CellResolution)
+			else if (UpValid)
 			{
 				yes |= RightUp.Pixels[0, 0].value <= world.ValueThreshold;
 
@@ -484,6 +489,10 @@ public class PixelChunk : MonoBehaviour
 		GenerateTree(dim);
 
 		mesh.Clear();
+
+		//vertices = new List<Vector3>();
+		//triangles = new List<int>();
+
 		vertices.Clear();
 		triangles.Clear();
 
@@ -508,6 +517,9 @@ public class PixelChunk : MonoBehaviour
 		mesh.indexFormat = vertices.Count >= 65535 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16;
 		mesh.vertices = vertices.ToArray();
 		mesh.triangles = triangles.ToArray();
+
+		//vertices = null;
+		//triangles = null;
 
 		//x and y are the bottom edges of the node
 		//length is the width, in cells, of the node
@@ -798,7 +810,11 @@ public class PixelChunk : MonoBehaviour
 	{
 		if (colliders == null)
 		{
+#if USE_POLYGONS
+			colliders = new List<PolygonCollider2D>();
+#else
 			colliders = new List<EdgeCollider2D>();
+#endif
 		}
 		else
 		{
@@ -900,11 +916,15 @@ public class PixelChunk : MonoBehaviour
 			}
 
 			//now add new collider
+#if USE_POLYGONS
+			PolygonCollider2D collider = gameObject.AddComponent<PolygonCollider2D>();
+			collider.points = currentEdgeList.ToArray();
+#else
 			EdgeCollider2D collider = gameObject.AddComponent<EdgeCollider2D>();
-			collider.sharedMaterial = world.Material;
-
 			collider.SetPoints(currentEdgeList);
+#endif
 			colliders.Add(collider);
+			collider.sharedMaterial = world.Material;
 		}
 
 		//recursively calculate edge vertices and add them to array
@@ -1012,43 +1032,42 @@ public class PixelChunk : MonoBehaviour
 			{
 				//add point
 				Vector2 point;
+
+				//if cell is out of non-connector cell bounds:
 				if (GetIsCellOutOfYBounds(coord.y))
 				{
-					//If down chunk exists and coord.y isn't too low, use values from neighbour
-					if (ChunkCoord.y > 0 && coord.y == -1)
-						point = GetPointBetweenPoints(
-							Down.Pixels[coord.x, world.CellResolution],		GetPointFromIndex(coord.x, coord.y),
-							Down.Pixels[coord.x + 1, world.CellResolution],	GetPointFromIndex(coord.x + 1, coord.y)
-							);
-					else //else out of bounds, return early
-						return;
-				}
-				else if (GetIsCellOutOfXBounds(coord.x))  //DO HAVE TO WORRY ABOUT DIAGONALS!!!
-				{
-					if (coord.x == -1 && ChunkCoord.x > 0)
+					if (GetIsCellOutOfXBounds(coord.x))
 					{
-						point = GetPointBetweenPoints(
-							Left.Pixels[world.CellResolution, coord.y], GetPointFromIndex(coord.x, coord.y),
-							pixels[coord.x + 1, coord.y], GetPointFromIndex(coord.x + 1, coord.y)
+						// if going down from diagonal cell
+						if (coord.y == world.CellResolution && coord.x == world.CellResolution && RightValid)
+							point = GetPointBetweenPoints(
+								pixels[coord.x, coord.y], GetPointFromIndex(coord.x, coord.y),
+								Right.Pixels[0, coord.y], GetPointFromIndex(coord.x + 1, coord.y)
 							);
+						else
+							return; // a different chunk handles this cell or it is out of bounds
 					}
-					else if (coord.x == world.CellResolution && ChunkCoord.x < world.ChunkResolution.x)
+					//else if going down from up connector
+					else if (coord.y == world.CellResolution)
+						point = GetPointBetweenPoints(coord.x, coord.y, coord.x + 1, coord.y);
+					else return; // a different chunk handles this cell or it is out of bounds
+				}
+				else if (GetIsCellOutOfXBounds(coord.x)) 
+				{
+					if (coord.x == world.CellResolution && ChunkCoord.x < world.ChunkResolution.x)
 					{
 						point = GetPointBetweenPoints(
 							pixels[coord.x, coord.y], GetPointFromIndex(coord.x, coord.y),
 							Right.Pixels[0, coord.y], GetPointFromIndex(coord.x + 1, coord.y)
 							);
 					}
-					else //completely out of bounds
-						return;
+					else 
+						return; // a different chunk handles this cell or it is out of bounds
 				}
 				else
 					point = GetPointBetweenPoints(coord.x, coord.y, coord.x + 1, coord.y);
 
-				if (insertBefore)
-					currentEdgeList.Insert(0, point);
-				else
-					currentEdgeList.Add(point);
+				AddPoint(point);
 
 				//set coord to be true for the next cell coord (which is one down in this case)
 				coord.y--;
@@ -1061,52 +1080,65 @@ public class PixelChunk : MonoBehaviour
 					//iterate to next edge
 					CalculateEdge(coord, data.cellType, Direction.up, insertBefore);
 				}
-				//else if (coord == edgeData[edgeDataStartIndex].Coord)
-				//{
-				//	//if final coord is the same as the first coord, it is a loop.
-				//	currentEdgeList.Add(currentEdgeList[0]);
-				//}
 			}
 			void IterateUp()
 			{
 				Vector2 point;
 				if (GetIsCellOutOfYBounds(coord.y))
 				{
-					//If up chunk exists and coord.y isn't too high, use values from neighbour
-					if (ChunkCoord.y + 1 < world.ChunkResolution.y && coord.y == world.CellResolution)
+					//if diagonal going up
+					if (GetIsCellOutOfXBounds(coord.x))
+					{
+						if (coord.y == world.CellResolution && coord.x == world.CellResolution && UpRightValid)
+						{
+							point = GetPointBetweenPoints(
+								Up.Pixels[coord.x, 0], GetPointFromIndex(coord.x, coord.y + 1),
+								RightUp.Pixels[0, 0], GetPointFromIndex(coord.x + 1, coord.y + 1)
+							);
+							//no need to continue iterating, this edge is guaranteed to end here
+							AddPoint(point);
+							return;
+						}
+						else
+							return; // a different chunk handles this cell or it is out of bounds
+					}
+					//if up connector cell
+					else if (coord.y == world.CellResolution && UpValid)
+					{
 						point = GetPointBetweenPoints(
 							Up.Pixels[coord.x, 0],			GetPointFromIndex(coord.x, coord.y + 1),
 							Up.Pixels[coord.x + 1, 0],		GetPointFromIndex(coord.x + 1, coord.y + 1)
 							);
-					else //else out of bounds, return early
+						//no need to continue iterating, this edge is guaranteed to end here
+						AddPoint(point);
 						return;
+					}
+					else
+						return; // a different chunk handles this cell or it is out of bounds
 				}
-				else if (GetIsCellOutOfXBounds(coord.x))  //DO HAVE TO WORRY ABOUT DIAGONALS!!!
+				else if (GetIsCellOutOfXBounds(coord.x)) 
 				{
-					if (coord.x == -1 && ChunkCoord.x > 0)
+					if (coord.x == -1 && LeftValid)
 					{
 						point = GetPointBetweenPoints(
 							Left.Pixels[world.CellResolution, coord.y + 1], GetPointFromIndex(coord.x, coord.y + 1),
 							pixels[coord.x + 1, coord.y + 1], GetPointFromIndex(coord.x + 1, coord.y + 1)
 							);
 					}
-					else if (coord.x == world.CellResolution && ChunkCoord.x < world.ChunkResolution.x)
+					else if (coord.x == world.CellResolution && RightValid)
 					{
 						point = GetPointBetweenPoints(
 							pixels[coord.x, coord.y + 1], GetPointFromIndex(coord.x, coord.y + 1),
 							Right.Pixels[0, coord.y + 1], GetPointFromIndex(coord.x + 1, coord.y + 1)
 							);
 					}
-					else //completely out of bounds
-						return;
+					else
+						return;  // a different chunk handles this cell or it is out of bounds
 				}
 				else
 					point = GetPointBetweenPoints(coord.x, coord.y + 1, coord.x + 1, coord.y + 1);
 
-				if (insertBefore)
-					currentEdgeList.Insert(0, point);
-				else
-					currentEdgeList.Add(point);
+				AddPoint(point);
 
 				coord.y++;
 				EdgeNodeData data = new EdgeNodeData(coord.x, coord.y, Direction.up);
@@ -1118,41 +1150,60 @@ public class PixelChunk : MonoBehaviour
 				Vector2 point;
 				if (GetIsCellOutOfXBounds(coord.x))
 				{
-					//If right chunk exists and coord.x isn't too high, use values from neighbour
-					if (ChunkCoord.x + 1 < world.ChunkResolution.x && coord.x == world.CellResolution)
+					if (GetIsCellOutOfYBounds(coord.y))
+					{
+						//if is iterating to a diagonal cell
+						if (coord.y == world.CellResolution
+							&& coord.x == world.CellResolution && UpRightValid) //check if out of bounds on x or y
+						{
+							point = GetPointBetweenPoints(
+								Right.Pixels[0, coord.y], GetPointFromIndex(coord.x + 1, coord.y),
+								RightUp.Pixels[0, 0], GetPointFromIndex(coord.x + 1, coord.y + 1)
+							);
+
+							//no need to continue iterating, this edge is guaranteed to end here
+							AddPoint(point);
+							return;
+						}
+						else
+							return; // a different chunk handles this cell or it is out of bounds
+					}
+					else if (coord.x == world.CellResolution && RightValid)
+					{
 						point = GetPointBetweenPoints(
 							Right.Pixels[0, coord.y], GetPointFromIndex(coord.x + 1, coord.y),
 							Right.Pixels[0, coord.y + 1], GetPointFromIndex(coord.x + 1, coord.y + 1)
 							);
-					else //else out of bounds, return early
+
+						//no need to continue iterating, this edge is guaranteed to end here
+						AddPoint(point);
 						return;
+					}
+					else return; // a different chunk handles this cell or it is out of bounds
 				}
-				else if (GetIsCellOutOfYBounds(coord.y))  //DO HAVE TO WORRY ABOUT DIAGONALS!!!
+				else if (GetIsCellOutOfYBounds(coord.y))
 				{
-					if (coord.y == -1 && ChunkCoord.y > 0)
+					if (coord.y == -1 && DownValid)
 					{
 						point = GetPointBetweenPoints(
 							Down.Pixels[coord.x + 1, world.CellResolution], GetPointFromIndex(coord.x + 1, coord.y),
 							pixels[coord.x + 1, coord.y], GetPointFromIndex(coord.x + 1, coord.y + 1)
 							);
 					}
-					else if (coord.y == world.CellResolution && ChunkCoord.y < world.ChunkResolution.y)
+					else if (coord.y == world.CellResolution && UpValid)
 					{
 						point = GetPointBetweenPoints(
 							pixels[coord.x + 1, coord.y], GetPointFromIndex(coord.x + 1, coord.y),
 							Up.Pixels[coord.x + 1, 0], GetPointFromIndex(coord.x + 1, coord.y + 1)
 							);
 					}
-					else //completely out of bounds
-						return;
+					else
+						return;  // a different chunk handles this cell or it is out of bounds
 				}
 				else
 					point = GetPointBetweenPoints(coord.x + 1, coord.y, coord.x + 1, coord.y + 1);
 
-				if (insertBefore)
-					currentEdgeList.Insert(0, point);
-				else
-					currentEdgeList.Add(point);
+				AddPoint(point);
 
 				coord.x++;
 				EdgeNodeData data = new EdgeNodeData(coord.x, coord.y, Direction.left);
@@ -1163,52 +1214,49 @@ public class PixelChunk : MonoBehaviour
 			{
 				Vector2 point;
 				if (GetIsCellOutOfXBounds(coord.x))
-				{
-					//If left chunk exists and coord.x isn't too low, use values from neighbour
-					if (ChunkCoord.x > 0 && coord.x == -1)
-						point = GetPointBetweenPoints(
-							Left.Pixels[world.CellResolution, coord.y], GetPointFromIndex(coord.x, coord.y),
-							Left.Pixels[world.CellResolution, coord.y + 1], GetPointFromIndex(coord.x, coord.y + 1)
-							);
-					else if (coord.x == world.CellResolution && ChunkCoord.x < world.ChunkResolution.x) 
+				{	
+					if (GetIsCellOutOfYBounds(coord.y))
 					{
-						if (!GetIsCellOutOfYBounds(coord.y))
+						//if diagonal connector cell going to vertical connector cell
+						if (coord.y == world.CellResolution && UpValid)
 						{
-							//returning into chunk from connector pixel, just use normal getpoints thing
-							point = GetPointBetweenPoints(coord.x, coord.y, coord.x, coord.y + 1);
-						}
-						else if (ChunkCoord.y < world.ChunkResolution.y) //!!!going from diagonal to nondiagonal!!!
 							point = GetPointBetweenPoints(
 								pixels[coord.x, coord.y], GetPointFromIndex(coord.x, coord.y),
 								Up.Pixels[coord.x, 0], GetPointFromIndex(coord.x, coord.y + 1)
 							);
+						}
 						else
-							return; //out of bounds, although this particular case shouldn't really be possible.
+							return; //other chunk handles this cell or it is out of bounds
 					}
-					else //else out of bounds, return early
-						return;
+					else if (coord.x == world.CellResolution) 
+					{
+						//is going from connector cell to regular cell
+						point = GetPointBetweenPoints(coord.x, coord.y, coord.x, coord.y + 1);
+					}
+					else
+						return; //other chunk handles this cell or it is out of bounds
 				}
 				else if (GetIsCellOutOfYBounds(coord.y)) //if is a chunk connector cell moving to another chunk connector cell point should still be found
 														 //(since it is not going rightward or upward we don't need to worry about diagonal cell)
 				{
-					if (coord.y == -1 && ChunkCoord.y > 0) //connector cell to connector cell
+					if (coord.y == -1 && DownValid) //connector cell to connector cell
 					{
 						point = GetPointBetweenPoints(
 							Down.Pixels[coord.x, world.CellResolution], GetPointFromIndex(coord.x, coord.y),
 							pixels[coord.x, coord.y], GetPointFromIndex(coord.x, coord.y + 1)
 							);
 					}
-					else if (coord.y == world.CellResolution && ChunkCoord.y < world.ChunkResolution.y) //connector cell to connector cell
+					else if (coord.y == world.CellResolution && UpValid)
 					{
 						point = GetPointBetweenPoints(
 							pixels[coord.x, coord.y], GetPointFromIndex(coord.x, coord.y),
-							Up.Pixels[coord.x, 0], GetPointFromIndex(coord.x, coord.y + 1)
-							);
+							Up.Pixels[coord.x, 0], GetPointFromIndex(coord.x, coord.y + 1));
 					}
-					else //completely out of bounds
-						return;
+					else
+						return; //other chunk handles this cell or it is out of bounds
 				}
-				else point = GetPointBetweenPoints(coord.x, coord.y, coord.x, coord.y + 1);
+				else 
+					point = GetPointBetweenPoints(coord.x, coord.y, coord.x, coord.y + 1);
 
 				if (insertBefore)
 					currentEdgeList.Insert(0, point);
@@ -1217,10 +1265,17 @@ public class PixelChunk : MonoBehaviour
 
 				coord.x--;
 				EdgeNodeData data = new EdgeNodeData(coord.x, coord.y, Direction.right);
-				if (CalculateNewEdge(ref data))
+				if (coord.x >= 0 && CalculateNewEdge(ref data))
 					CalculateEdge(coord, data.cellType, Direction.right, insertBefore);
 			}
 			
+			void AddPoint(Vector2 point)
+			{
+				if (insertBefore)
+					currentEdgeList.Insert(0, point);
+				else
+					currentEdgeList.Add(point);
+			}
 		}
 
 		bool FindEdge(ref EdgeNodeData edgeInfo)
@@ -1646,6 +1701,16 @@ public class PixelChunk : MonoBehaviour
 	//		}
 	//	}
 	//}
+
+	bool LeftValid => ChunkCoord.x > 0;
+	bool RightValid => ChunkCoord.x + 1 < world.ChunkResolution.x;
+	bool DownValid => ChunkCoord.y > 0;
+	bool UpValid => ChunkCoord.y + 1 < world.ChunkResolution.y;
+
+	bool UpLeftValid => ChunkCoord.x > 0 && ChunkCoord.y + 1 < world.ChunkResolution.y;
+	bool UpRightValid => ChunkCoord.x + 1 < world.ChunkResolution.x && ChunkCoord.y + 1 < world.ChunkResolution.y;
+	bool DownLeftValid => ChunkCoord.x > 0 &&  ChunkCoord.y > 0;
+	bool DownRightValid => ChunkCoord.x + 1 < world.ChunkResolution.x && ChunkCoord.y > 0;
 
 	PixelChunk Left => world.Chunks[ChunkCoord.x - 1, ChunkCoord.y];
 	PixelChunk Right => world.Chunks[ChunkCoord.x + 1, ChunkCoord.y];

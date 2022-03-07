@@ -42,31 +42,31 @@ public class PixelModifier
 		//calls the correct apply function based on the modifier type
 		//I'm not sure if this is better than a switch statement honestly. its definitely messier.
 
-		if (stencil.ShouldModify(ref pixel, position, this))
+		if (stencil.ShouldModify(position, this))
 			apply[(int)modifierType](ref pixel, position, this);
 	}
 
 	#region Apply Functions
 	static void ApplyFill(ref Pixel pixel, Vector2 position, PixelModifier modifier)
 	{
-		pixel.value = Mathf.Clamp(modifier.stencil.GetTargetValue(ref pixel, position, modifier), pixel.value, 1);
+		pixel.value = Mathf.Clamp(modifier.stencil.GetTargetValue(position, modifier), pixel.value, 1);
 	}
 
 	static void ApplyDelete(ref Pixel pixel, Vector2 position, PixelModifier modifier)
 	{
-		pixel.value = Mathf.Clamp(modifier.stencil.GetTargetRemoveValue(ref pixel, position, modifier), 0, pixel.value);
+		pixel.value = Mathf.Clamp(modifier.stencil.GetTargetRemoveValue(position, modifier), 0, pixel.value);
 	}
 
 	static void ApplyAdd(ref Pixel pixel, Vector2 position, PixelModifier modifier)
 	{
-		float targetValue = modifier.stencil.GetTargetValue(ref pixel, position, modifier);
+		float targetValue = modifier.stencil.GetTargetValue(position, modifier);
 		float newValue = Mathf.MoveTowards(pixel.value, targetValue, modifier.strength * Time.deltaTime);
 		pixel.value = Mathf.Clamp(newValue, pixel.value, 1);
 	}
 
 	static void ApplyRemove(ref Pixel pixel, Vector2 position, PixelModifier modifier)
 	{
-		float targetValue = modifier.stencil.GetTargetRemoveValue(ref pixel, position, modifier);
+		float targetValue = modifier.stencil.GetTargetRemoveValue(position, modifier);
 		float newValue = Mathf.MoveTowards(pixel.value, targetValue, modifier.strength * Time.deltaTime);
 		pixel.value = Mathf.Clamp(newValue, 0, pixel.value);
 	}

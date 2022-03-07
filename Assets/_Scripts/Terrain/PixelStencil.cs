@@ -13,13 +13,13 @@ public enum StencilType : byte
 public abstract class PixelStencil
 {
 	//gets whether a pixel in the modifier bounding box should be modified or not
-	public abstract bool ShouldModify(ref Pixel pixel, Vector2 position, PixelModifier modifier);
+	public abstract bool ShouldModify(Vector2 position, PixelModifier modifier);
 
 	//gets the target value for the stencil
-	public abstract float GetTargetValue(ref Pixel pixel, Vector2 position, PixelModifier modifier);
+	public abstract float GetTargetValue(Vector2 position, PixelModifier modifier);
 
 	//gets the target value for the stencil when removing stencil
-	public abstract float GetTargetRemoveValue(ref Pixel pixel, Vector2 position, PixelModifier modifier);
+	public abstract float GetTargetRemoveValue(Vector2 position, PixelModifier modifier);
 
 
 	public abstract StencilType Type { get; }
@@ -32,13 +32,13 @@ public class PixelStencilCircle : PixelStencil
 
 	}
 
-	public override bool ShouldModify(ref Pixel pixel, Vector2 position, PixelModifier modifier)
+	public override bool ShouldModify(Vector2 position, PixelModifier modifier)
 	{
 		return true;
 	}
 
 	//note: do not need to get pixel value, since target value does not rely on previous value
-	public sealed override float GetTargetValue(ref Pixel pixel, Vector2 position, PixelModifier modifier)
+	public sealed override float GetTargetValue(Vector2 position, PixelModifier modifier)
 	{
 
 		position = position - modifier.Centre;
@@ -48,7 +48,7 @@ public class PixelStencilCircle : PixelStencil
 		return modifier.Radius + modifier.World.ValueThreshold - position.magnitude;
 	}
 
-	public override float GetTargetRemoveValue(ref Pixel pixel, Vector2 position, PixelModifier modifier)
+	public override float GetTargetRemoveValue(Vector2 position, PixelModifier modifier)
 	{
 		position = position - modifier.Centre;
 		return position.magnitude + modifier.World.ValueThreshold - modifier.Radius;
@@ -67,19 +67,25 @@ public class PixelStencilRectangle : PixelStencil
 
 	}
 
-	public override bool ShouldModify(ref Pixel pixel, Vector2 position, PixelModifier modifier)
+	public override bool ShouldModify(Vector2 position, PixelModifier modifier)
 	{
 		return true;
 	}
 
-	public sealed override float GetTargetValue(ref Pixel pixel, Vector2 position, PixelModifier modifier)
+	public sealed override float GetTargetValue(Vector2 position, PixelModifier modifier)
 	{
-		return 1;
+		//this is technically wrong on the corners but whatever
+		position = position - modifier.Centre;
+		Vector2 rect = new Vector2(Mathf.Abs(position.x) - modifier.Radius, Mathf.Abs(position.y) - modifier.Radius);
+		return modifier.World.ValueThreshold - Mathf.Max(rect.x, rect.y);
 	}
 
-	public override float GetTargetRemoveValue(ref Pixel pixel, Vector2 position, PixelModifier modifier)
+	public override float GetTargetRemoveValue(Vector2 position, PixelModifier modifier)
 	{
-		return 0;
+		//this is technically wrong on the corners but whatever
+		position = position - modifier.Centre;
+		Vector2 rect = new Vector2(Mathf.Abs(position.x) - modifier.Radius, Mathf.Abs(position.y) - modifier.Radius);
+		return Mathf.Max(rect.x, rect.y) + modifier.World.ValueThreshold;
 	}
 
 	public override StencilType Type => StencilType.Rectangle;

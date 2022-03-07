@@ -32,7 +32,7 @@ public abstract class PixelGenerators : ScriptableObject
 	public int CellResolution { get => cellResolution; }
 	public float CellSize { get => cellSize; }
 	public float ValueThreshold { get => valueThreshold; }
-	public float ChunkSize { get; private set; }
-	public Vector2 HalfSize { get; private set; }
+	public float ChunkSize { get; protected set; }
+	public Vector2 HalfSize { get; protected set; }
 
 }

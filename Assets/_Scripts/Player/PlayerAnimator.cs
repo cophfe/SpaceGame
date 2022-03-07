@@ -389,7 +389,7 @@ public class PlayerAnimator : MonoBehaviour
 			targetMidPoint = startPos + new Vector2(Mathf.Cos(aAngle) * legTopLength, Mathf.Sin(aAngle) * legTopLength);
 
 			if (!foot.attachedToGround)
-				foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, rotMod * - Vector2.Angle(Vector2.up, (targetMidPoint - foot.point).normalized)), footRotateSpeed * Time.deltaTime);
+				foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, (targetMidPoint - foot.point).normalized)), footRotateSpeed * Time.deltaTime);
 			else
 				foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, foot.normal)), footRotateSpeed * Time.deltaTime);
 		}

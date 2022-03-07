@@ -9,9 +9,13 @@ public class GameManager : Singleton<GameManager>
 	public Camera MainCamera { get; private set; }
 	public PlayerController Player { get; private set; }
 
+	private void OnEnable()
+	{
+		base.OnEnable();
+	}
+
 	new private void Awake()
 	{
-		base.Awake();
 		Worlds = new List<PixelWorld>();
 		MainCamera = Camera.main;
 	}

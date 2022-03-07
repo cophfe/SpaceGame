@@ -42,7 +42,7 @@ public class PlayerMotor : MonoBehaviour
 	[SerializeField, Range(0,3)] float slopeFriction = 0.4f;
 	[SerializeField] float slopeGravityMod = 1.0f;
 	[Header("Rotation")]
-	[SerializeField] float maxRotationSpeed = 0.4f;
+	[SerializeField] float maxRotationSpeed = 1000f;
 	[SerializeField] float rotationSmoothSpeed = 0.1f;
 	#endregion
 
@@ -148,16 +148,16 @@ public class PlayerMotor : MonoBehaviour
 		//check attached gravity well direction
 		if (currentGravityWell)
 		{
-			upDirection = currentGravityWell.GetGravityDirection();
+			upDirection = currentGravityWell.GetUpDirection();
 			rightDirection = -Vector2.Perpendicular(upDirection);
 		}
 	}
 
 	void UpdateRotation()
 	{
-		//update rotation based on upDirection (go through rigidbody.rotation)
-		//float targetRotation = Vector2.Angle(Vector2.up, upDirection);
-		//controller.RB.rotation = Mathf.SmoothDampAngle(controller.RB.rotation, targetRotation, ref rotationVelocity, rotationSmoothSpeed, maxRotationSpeed, Time.deltaTime);
+		//update rotation based on upDirection(go through rigidbody.rotation)
+		float targetRotation = Vector2.SignedAngle(Vector2.up, upDirection);
+		controller.RB.rotation = Mathf.SmoothDampAngle( controller.RB.rotation, targetRotation, ref rotationVelocity, rotationSmoothSpeed, maxRotationSpeed, Time.deltaTime);
 	}
 
 	void ScanForGround()

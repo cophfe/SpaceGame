@@ -12,6 +12,8 @@ public class GravityWell : MonoBehaviour
 	private void Start()
 	{
 		player = GameManager.Instance.Player;
+		if (player == null)
+			enabled = false;
 	}
 
 	private void FixedUpdate()
@@ -19,15 +21,21 @@ public class GravityWell : MonoBehaviour
 		player.Motor.TrySetWell(this); //attempt to set the player's gravity well to this. this will succeed if it is the closest well (right now the player can not exist without a well
 	}
 
-	public float GetGravity(float gravity)
+	public virtual float GetGravity(float gravity)
 	{
 		//consider using linear gravity like outer wilds does (so it is more intuitive than square cube law gravity for smaller planets)
 
 		return gravity * gravityMod;
 	}
 
-	public Vector2 GetGravityDirection()
+	public virtual Vector2 GetUpDirection()
 	{
-		return ((Vector2)transform.position - player.PlayerPosition).normalized;
+		return (player.PlayerPosition - (Vector2)transform.position).normalized;
 	}
+}
+
+public class SimpleWell : GravityWell
+{
+	public Vector2 upDirection = Vector2.up;
+
 }

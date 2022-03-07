@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0004536aec5b244ea27315ac54d936e, type: 3}
+  m_Name: PlanetGenerator
+  m_EditorClassIdentifier: 
+  cellResolution: 32
+  cellSize: 0.5
+  valueThreshold: 0.5
+  planetRadius: 300
+  planetAtmosphereSize: 30
+  surfaceNoise:
+  - frequency: 10
+    strength: 20
+  - frequency: 4
+    strength: 30
+  - frequency: 4
+    strength: 30
+  mountainSeed: 1

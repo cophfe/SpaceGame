@@ -67,14 +67,14 @@ public class PixelWorld : MonoBehaviour
 	}
 
 	//check if a stencil is colliding with the map
-	public bool IsColliding(PixelModifier stencil)
+	public bool IsColliding(PixelModifier modifier)
 	{
 		Vector2 pos = transform.position;
 		//just do a 2d AABB check with the stencil
-		return (stencil.XStart	< pos.x + HalfSize.x)
-			&& (stencil.XEnd	> pos.x - HalfSize.x)
-			&& (stencil.YStart	< pos.y + HalfSize.y)
-			&& (stencil.YEnd	> pos.y - HalfSize.y);
+		return (modifier.XStart	< pos.x + HalfSize.x)
+			&& (modifier.XEnd	> pos.x - HalfSize.x)
+			&& (modifier.YStart	< pos.y + HalfSize.y)
+			&& (modifier.YEnd	> pos.y - HalfSize.y);
 	}
 
 	private void OnValidate()
