@@ -15,9 +15,12 @@
 	//public MaterialType type2
 	//public float MaterialT { get { value1 / (value1 + value2) }
 
-	enum MaterialType : byte
+	public enum MaterialType : byte
 	{
-		AIR
+		Dirt,
+		Stone,
+		Grass,
+		Count
 	}
 }
 

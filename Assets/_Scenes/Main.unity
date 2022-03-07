@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.015731832, g: 0.015731832, b: 0.015731832, a: 1}
+  m_IndirectSpecularColor: {r: 0.0053634816, g: 0.0018939872, b: 0.009162902, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1208,21 +1208,9 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 749169176, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: maxRotationSpeed
-      value: 1000
-      objectReference: {fileID: 0}
-    - target: {fileID: 935210441001715224, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_CollisionDetection
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 3824490346238491120, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
       propertyPath: m_Name
       value: Player
-      objectReference: {fileID: 0}
-    - target: {fileID: 3824490346238491120, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3824490346238491121, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
       propertyPath: m_RootOrder
@@ -1234,7 +1222,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3824490346238491121, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 306
+      value: 165
       objectReference: {fileID: 0}
     - target: {fileID: 3824490346238491121, guid: 437d2c077f4f227438164cef38c4340a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2009,5 +1997,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6228281199586697655, guid: fbe71c9a398051244b1db3c2c1b6ed71, type: 3}
+      propertyPath: materialTextures.Array.data[0]
+      value: 
+      objectReference: {fileID: 2800000, guid: 1117e3a95a62fea45a577f466baa54b1, type: 3}
+    - target: {fileID: 6228281199586697655, guid: fbe71c9a398051244b1db3c2c1b6ed71, type: 3}
+      propertyPath: materialTextures.Array.data[1]
+      value: 
+      objectReference: {fileID: 2800000, guid: 3cc09e18a6ac8264e9ad61d452f2765f, type: 3}
+    - target: {fileID: 6228281199586697655, guid: fbe71c9a398051244b1db3c2c1b6ed71, type: 3}
+      propertyPath: materialTextures.Array.data[2]
+      value: 
+      objectReference: {fileID: 2800000, guid: 2de0948655078284d87c4d542aab248d, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fbe71c9a398051244b1db3c2c1b6ed71, type: 3}

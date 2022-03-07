@@ -15,10 +15,10 @@ public class PixelGeneratorPlanet : PixelGenerators
 	{
 		base.OnEnable();
 
-		var random = new System.Random(mountainSeed);
+		Random.InitState(mountainSeed);
 		for (int i = 0; i < surfaceNoise.Length; i++)
 		{
-			surfaceNoise[i].seed = random.Next();
+			surfaceNoise[i].seed = Random.value;
 		}
 		int radius = Mathf.CeilToInt((planetAtmosphereSize + planetRadius) / ChunkSize);
 		chunkResolution = new Vector2Int(radius * 2, radius * 2);
@@ -65,7 +65,7 @@ public class PixelGeneratorPlanet : PixelGenerators
 
 		public float Sample(Vector2 v)
 		{
-			return Mathf.PerlinNoise((v.x + seed )* frequency, (v.y + seed) * frequency + seed) * strength;
+			return Mathf.PerlinNoise(v.x* frequency + seed, v.y * frequency + seed) * strength;
 		}
 	}
 }

@@ -18,10 +18,10 @@ MonoBehaviour:
   planetRadius: 300
   planetAtmosphereSize: 30
   surfaceNoise:
-  - frequency: 10
+  - frequency: 5
     strength: 20
-  - frequency: 4
-    strength: 30
-  - frequency: 4
-    strength: 30
+  - frequency: 10
+    strength: 10
+  - frequency: 20
+    strength: 5
   mountainSeed: 1
