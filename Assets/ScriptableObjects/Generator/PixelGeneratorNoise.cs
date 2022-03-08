@@ -7,6 +7,7 @@ public class PixelGeneratorNoise : PixelGenerators
 {
 	public float perlinNoiseSampleSize = 0.1f;
 	public Vector2Int chunkDimensions = new Vector2Int(5, 5);
+	public Pixel.MaterialType groundMaterial = Pixel.MaterialType.Stone;
 
 	protected override sealed void OnEnable()
 	{
@@ -32,7 +33,9 @@ public class PixelGeneratorNoise : PixelGenerators
 			for (int y = 0; y < cellResolution + 1; y++)
 			{
 				float perlinValue = Mathf.PerlinNoise(x * perlinNoiseSampleSize + offset.x, y * perlinNoiseSampleSize + offset.y);
-				pixels[x, y].value = Mathf.Clamp01(perlinValue);
+				pixels[x, y].value1 = Mathf.Clamp01(perlinValue);
+				pixels[x, y].type1 = Pixel.MaterialType.Dirt;
+				pixels[x, y].type2 = Pixel.MaterialType.None;
 			}
 		}
 

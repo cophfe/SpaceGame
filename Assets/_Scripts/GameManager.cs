@@ -7,14 +7,14 @@ public class GameManager : Singleton<GameManager>
 	//there could be multiple maps in the scene
 	public List<PixelWorld> Worlds { get; private set;}
 	public Camera MainCamera { get; private set; }
-	public PlayerController Player { get; private set; 
+	public PlayerController Player { get; private set; }
 
-	private void OnEnable()
+	new private void OnEnable()
 	{
 		base.OnEnable();
 	}
 
-	new private void Awake()
+	 private void Awake()
 	{
 		//Construct 
 		Worlds = new List<PixelWorld>();

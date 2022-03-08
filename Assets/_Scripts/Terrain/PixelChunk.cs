@@ -12,9 +12,12 @@ public class PixelChunk : MonoBehaviour
 	//Private
 	Pixel[,] pixels = null;
 	Mesh mesh;
-	List<Vector3> vertices = new List<Vector3>(); //maybe shouldn't store these (although it will increase performance slightly)
-	List<int> triangles = new List<int>();
-	TreeNode tree;
+
+	//definitely shouldn't store these (although it will increase performance slightly)
+	List<Vector3> vertices; 
+	List<int> triangles;
+	List<Color32> vertexColor; 
+	
 	PixelWorld world;
 	public Vector2Int ChunkCoord { get; set; }
 
@@ -132,123 +135,123 @@ public class PixelChunk : MonoBehaviour
 		//this is a lot longer than I feel it needs to be.
 		if (xMinValid)
 		{
-			yes |= pixels[x - 1, y].value >= world.ValueThreshold;
+			yes |= pixels[x - 1, y].Value >= world.ValueThreshold;
 
 			if (yMinValid)
 			{
-				yes |= pixels[x - 1, y - 1].value >= world.ValueThreshold;
+				yes |= pixels[x - 1, y - 1].Value >= world.ValueThreshold;
 
-				yes |= pixels[x, y - 1].value >= world.ValueThreshold;
+				yes |= pixels[x, y - 1].Value >= world.ValueThreshold;
 			}
 			else if (LeftValid)
 			{
-				yes |= Down.Pixels[x - 1, world.CellResolution].value >= world.ValueThreshold;
+				yes |= Down.Pixels[x - 1, world.CellResolution].Value >= world.ValueThreshold;
 
-				yes |= Down.Pixels[x, world.CellResolution].value >= world.ValueThreshold;
+				yes |= Down.Pixels[x, world.CellResolution].Value >= world.ValueThreshold;
 			}
 
 			if (yMaxValid)
 			{
-				yes |= pixels[x - 1, y + 1].value >= world.ValueThreshold;
+				yes |= pixels[x - 1, y + 1].Value >= world.ValueThreshold;
 
-				yes |= pixels[x, y + 1].value >= world.ValueThreshold;
+				yes |= pixels[x, y + 1].Value >= world.ValueThreshold;
 			}
 			else if (UpValid)
 			{
-				yes |= Up.Pixels[x - 1, 0].value >= world.ValueThreshold;
+				yes |= Up.Pixels[x - 1, 0].Value >= world.ValueThreshold;
 
-				yes |= Up.Pixels[x, 0].value >= world.ValueThreshold;
+				yes |= Up.Pixels[x, 0].Value >= world.ValueThreshold;
 			}
 		}
 		else if (LeftValid)
 		{
-			yes |= Left.Pixels[world.CellResolution, y].value >= world.ValueThreshold;
+			yes |= Left.Pixels[world.CellResolution, y].Value >= world.ValueThreshold;
 
 			if (yMinValid)
 			{
-				yes |= Left.pixels[world.CellResolution, y - 1].value >= world.ValueThreshold;
+				yes |= Left.pixels[world.CellResolution, y - 1].Value >= world.ValueThreshold;
 
-				yes |= pixels[x, y - 1].value >= world.ValueThreshold;
+				yes |= pixels[x, y - 1].Value >= world.ValueThreshold;
 			}
 			else if (DownValid)
 			{
-				yes |= LeftDown.Pixels[world.CellResolution, world.CellResolution].value >= world.ValueThreshold;
+				yes |= LeftDown.Pixels[world.CellResolution, world.CellResolution].Value >= world.ValueThreshold;
 
-				yes |= Down.Pixels[x, world.CellResolution].value >= world.ValueThreshold;
+				yes |= Down.Pixels[x, world.CellResolution].Value >= world.ValueThreshold;
 			}
 
 			if (yMaxValid)
 			{
-				yes |= Left.Pixels[world.CellResolution, y + 1].value >= world.ValueThreshold;
+				yes |= Left.Pixels[world.CellResolution, y + 1].Value >= world.ValueThreshold;
 
-				yes |= pixels[x, y + 1].value >= world.ValueThreshold;
+				yes |= pixels[x, y + 1].Value >= world.ValueThreshold;
 			}
 			else if (UpValid)
 			{
-				yes |= LeftUp.Pixels[world.CellResolution, 0].value >= world.ValueThreshold;
+				yes |= LeftUp.Pixels[world.CellResolution, 0].Value >= world.ValueThreshold;
 
-				yes |= Up.Pixels[x, 0].value >= world.ValueThreshold;
+				yes |= Up.Pixels[x, 0].Value >= world.ValueThreshold;
 			}
 		}
 
 		if (xMaxValid)
 		{
-			yes |= pixels[x + 1, y].value >= world.ValueThreshold;
+			yes |= pixels[x + 1, y].Value >= world.ValueThreshold;
 
 			if (yMinValid)
 			{
-				yes |= pixels[x + 1, y - 1].value >= world.ValueThreshold;
+				yes |= pixels[x + 1, y - 1].Value >= world.ValueThreshold;
 
-				yes |= pixels[x, y - 1].value >= world.ValueThreshold;
+				yes |= pixels[x, y - 1].Value >= world.ValueThreshold;
 			}
 			else if (DownValid)
 			{
-				yes |= Down.Pixels[x + 1, world.CellResolution].value >= world.ValueThreshold;
+				yes |= Down.Pixels[x + 1, world.CellResolution].Value >= world.ValueThreshold;
 
-				yes |= Down.Pixels[x, world.CellResolution].value >= world.ValueThreshold;
+				yes |= Down.Pixels[x, world.CellResolution].Value >= world.ValueThreshold;
 			}
 
 			if (yMaxValid)
 			{
-				yes |= pixels[x + 1, y + 1].value >= world.ValueThreshold;
+				yes |= pixels[x + 1, y + 1].Value >= world.ValueThreshold;
 
-				yes |= pixels[x, y + 1].value >= world.ValueThreshold;
+				yes |= pixels[x, y + 1].Value >= world.ValueThreshold;
 			}
 			else if (UpValid)
 			{
-				yes |= Up.Pixels[x + 1, 0].value >= world.ValueThreshold;
+				yes |= Up.Pixels[x + 1, 0].Value >= world.ValueThreshold;
 
-				yes |= Up.Pixels[x, 0].value >= world.ValueThreshold;
+				yes |= Up.Pixels[x, 0].Value >= world.ValueThreshold;
 			}
 		}
 		else if (RightValid)
 		{
-			yes |= Right.Pixels[0, y].value >= world.ValueThreshold;
+			yes |= Right.Pixels[0, y].Value >= world.ValueThreshold;
 
 			if (yMinValid)
 			{
-				yes |= Right.pixels[0, y - 1].value >= world.ValueThreshold;
+				yes |= Right.pixels[0, y - 1].Value >= world.ValueThreshold;
 
-				yes |= pixels[x, y - 1].value >= world.ValueThreshold;
+				yes |= pixels[x, y - 1].Value >= world.ValueThreshold;
 			}
 			else if (DownValid)
 			{
-				yes |= RightDown.Pixels[0, world.CellResolution].value >= world.ValueThreshold;
+				yes |= RightDown.Pixels[0, world.CellResolution].Value >= world.ValueThreshold;
 
-				yes |= Down.Pixels[x, world.CellResolution].value >= world.ValueThreshold;
+				yes |= Down.Pixels[x, world.CellResolution].Value >= world.ValueThreshold;
 			}
 
 			if (yMaxValid)
 			{
-				yes |= Right.Pixels[0, y + 1].value >= world.ValueThreshold;
+				yes |= Right.Pixels[0, y + 1].Value >= world.ValueThreshold;
 
-				yes |= pixels[x, y + 1].value >= world.ValueThreshold;
+				yes |= pixels[x, y + 1].Value >= world.ValueThreshold;
 			}
 			else if (UpValid)
 			{
-				yes |= RightUp.Pixels[0, 0].value >= world.ValueThreshold;
+				yes |= RightUp.Pixels[0, 0].Value >= world.ValueThreshold;
 
-				yes |= Up.Pixels[x, 0].value >= world.ValueThreshold;
+				yes |= Up.Pixels[x, 0].Value >= world.ValueThreshold;
 			}
 		}
 
@@ -267,123 +270,123 @@ public class PixelChunk : MonoBehaviour
 		//this is a lot longer than I feel it needs to be.
 		if (xMinValid)
 		{
-			yes |= pixels[x - 1, y].value <= world.ValueThreshold;
+			yes |= pixels[x - 1, y].Value <= world.ValueThreshold;
 
 			if (yMinValid)
 			{
-				yes |= pixels[x - 1, y - 1].value <= world.ValueThreshold;
+				yes |= pixels[x - 1, y - 1].Value <= world.ValueThreshold;
 
-				yes |= pixels[x, y - 1].value <= world.ValueThreshold;
+				yes |= pixels[x, y - 1].Value <= world.ValueThreshold;
 			}
 			else if (DownValid)
 			{
-				yes |= Down.Pixels[x - 1, world.CellResolution].value <= world.ValueThreshold;
+				yes |= Down.Pixels[x - 1, world.CellResolution].Value <= world.ValueThreshold;
 
-				yes |= Down.Pixels[x, world.CellResolution].value <= world.ValueThreshold;
+				yes |= Down.Pixels[x, world.CellResolution].Value <= world.ValueThreshold;
 			}
 
 			if (yMaxValid)
 			{
-				yes |= pixels[x - 1, y + 1].value <= world.ValueThreshold;
+				yes |= pixels[x - 1, y + 1].Value <= world.ValueThreshold;
 
-				yes |= pixels[x, y + 1].value <= world.ValueThreshold;
+				yes |= pixels[x, y + 1].Value <= world.ValueThreshold;
 			}
 			else if (UpValid)
 			{
-				yes |= Up.Pixels[x - 1, 0].value <= world.ValueThreshold;
+				yes |= Up.Pixels[x - 1, 0].Value <= world.ValueThreshold;
 
-				yes |= Up.Pixels[x, 0].value <= world.ValueThreshold;
+				yes |= Up.Pixels[x, 0].Value <= world.ValueThreshold;
 			}
 		}
 		else if (LeftValid)
 		{
-			yes |= Left.Pixels[world.CellResolution, y].value <= world.ValueThreshold;
+			yes |= Left.Pixels[world.CellResolution, y].Value <= world.ValueThreshold;
 
 			if (yMinValid)
 			{
-				yes |= Left.pixels[world.CellResolution, y - 1].value <= world.ValueThreshold;
+				yes |= Left.pixels[world.CellResolution, y - 1].Value <= world.ValueThreshold;
 
-				yes |= pixels[x, y - 1].value <= world.ValueThreshold;
+				yes |= pixels[x, y - 1].Value <= world.ValueThreshold;
 			}
 			else if (DownValid)
 			{
-				yes |= LeftDown.Pixels[world.CellResolution, world.CellResolution].value <= world.ValueThreshold;
+				yes |= LeftDown.Pixels[world.CellResolution, world.CellResolution].Value <= world.ValueThreshold;
 
-				yes |= Down.Pixels[x, world.CellResolution].value <= world.ValueThreshold;
+				yes |= Down.Pixels[x, world.CellResolution].Value <= world.ValueThreshold;
 			}
 
 			if (yMaxValid)
 			{
-				yes |= Left.Pixels[world.CellResolution, y + 1].value <= world.ValueThreshold;
+				yes |= Left.Pixels[world.CellResolution, y + 1].Value <= world.ValueThreshold;
 
-				yes |= pixels[x, y + 1].value <= world.ValueThreshold;
+				yes |= pixels[x, y + 1].Value <= world.ValueThreshold;
 			}
 			else if (UpValid)
 			{
-				yes |= LeftUp.Pixels[world.CellResolution, 0].value <= world.ValueThreshold;
+				yes |= LeftUp.Pixels[world.CellResolution, 0].Value <= world.ValueThreshold;
 
-				yes |= Up.Pixels[x, 0].value <= world.ValueThreshold;
+				yes |= Up.Pixels[x, 0].Value <= world.ValueThreshold;
 			}
 		}
 
 		if (xMaxValid)
 		{
-			yes |= pixels[x + 1, y].value <= world.ValueThreshold;
+			yes |= pixels[x + 1, y].Value <= world.ValueThreshold;
 
 			if (yMinValid)
 			{
-				yes |= pixels[x + 1, y - 1].value <= world.ValueThreshold;
+				yes |= pixels[x + 1, y - 1].Value <= world.ValueThreshold;
 
-				yes |= pixels[x, y - 1].value <= world.ValueThreshold;
+				yes |= pixels[x, y - 1].Value <= world.ValueThreshold;
 			}
 			else if (DownValid)
 			{
-				yes |= Down.Pixels[x + 1, world.CellResolution].value <= world.ValueThreshold;
+				yes |= Down.Pixels[x + 1, world.CellResolution].Value <= world.ValueThreshold;
 
-				yes |= Down.Pixels[x, world.CellResolution].value <= world.ValueThreshold;
+				yes |= Down.Pixels[x, world.CellResolution].Value <= world.ValueThreshold;
 			}
 
 			if (yMaxValid)
 			{
-				yes |= pixels[x + 1, y + 1].value <= world.ValueThreshold;
+				yes |= pixels[x + 1, y + 1].Value <= world.ValueThreshold;
 
-				yes |= pixels[x, y + 1].value <= world.ValueThreshold;
+				yes |= pixels[x, y + 1].Value <= world.ValueThreshold;
 			}
 			else if (UpValid)
 			{
-				yes |= Up.Pixels[x + 1, 0].value <= world.ValueThreshold;
+				yes |= Up.Pixels[x + 1, 0].Value <= world.ValueThreshold;
 
-				yes |= Up.Pixels[x, 0].value <= world.ValueThreshold;
+				yes |= Up.Pixels[x, 0].Value <= world.ValueThreshold;
 			}
 		}
 		else if (RightValid)
 		{
-			yes |= Right.Pixels[0, y].value <= world.ValueThreshold;
+			yes |= Right.Pixels[0, y].Value <= world.ValueThreshold;
 
 			if (yMinValid)
 			{
-				yes |= Right.pixels[0, y - 1].value <= world.ValueThreshold;
+				yes |= Right.pixels[0, y - 1].Value <= world.ValueThreshold;
 
-				yes |= pixels[x, y - 1].value <= world.ValueThreshold;
+				yes |= pixels[x, y - 1].Value <= world.ValueThreshold;
 			}
 			else if (DownValid)
 			{
-				yes |= RightDown.Pixels[0, world.CellResolution].value <= world.ValueThreshold;
+				yes |= RightDown.Pixels[0, world.CellResolution].Value <= world.ValueThreshold;
 
-				yes |= Down.Pixels[x, world.CellResolution].value <= world.ValueThreshold;
+				yes |= Down.Pixels[x, world.CellResolution].Value <= world.ValueThreshold;
 			}
 
 			if (yMaxValid)
 			{
-				yes |= Right.Pixels[0, y + 1].value <= world.ValueThreshold;
+				yes |= Right.Pixels[0, y + 1].Value <= world.ValueThreshold;
 
-				yes |= pixels[x, y + 1].value <= world.ValueThreshold;
+				yes |= pixels[x, y + 1].Value <= world.ValueThreshold;
 			}
 			else if (UpValid)
 			{
-				yes |= RightUp.Pixels[0, 0].value <= world.ValueThreshold;
+				yes |= RightUp.Pixels[0, 0].Value <= world.ValueThreshold;
 
-				yes |= Up.Pixels[x, 0].value <= world.ValueThreshold;
+				yes |= Up.Pixels[x, 0].Value <= world.ValueThreshold;
 			}
 		}
 
@@ -417,154 +420,52 @@ public class PixelChunk : MonoBehaviour
 #endif
 	}
 
-	public void GenerateTree(int dim)
-	{
-		tree = BuildTree(0, 0, dim);
-
-		//len is divisable by 2 always, except when it is one
-		TreeNode BuildTree(int x, int y, int longestDimension)
-		{
-			if (x >= world.CellResolution || y >= world.CellResolution)
-			{
-				//if it is out of bounds, return a dummy node with 0 values
-
-				TreeNode node = new TreeNode
-				{
-					max = 0,
-					min = 0
-				};
-
-				return node;
-			}
-			else if (longestDimension == 1)
-			{
-				//if len == 1 this is the bottom of the tree.
-				TreeNode node = new TreeNode();
-
-				//find min and max values
-				float min = pixels[x, y].value;
-				float max = pixels[x, y].value;
-				min = pixels[x + 1, y].value < min ? pixels[x + 1, y].value : min;
-				min = pixels[x, y + 1].value < min ? pixels[x, y + 1].value : min;
-				node.min = pixels[x + 1, y + 1].value < min ? pixels[x + 1, y + 1].value : min;
-				max = pixels[x + 1, y].value > max ? pixels[x + 1, y].value : max;
-				max = pixels[x, y + 1].value > max ? pixels[x, y + 1].value : max;
-				node.max = pixels[x + 1, y + 1].value > max ? pixels[x + 1, y + 1].value : max;
-
-				return node;
-			}
-			else
-			{
-				TreeNode node = new TreeNode
-				{
-					treeNodes = new TreeNode[4]
-				};
-
-				node.treeNodes[0] = BuildTree(x, y, longestDimension / 2);
-				node.treeNodes[1] = BuildTree(x + longestDimension / 2, y, longestDimension / 2);
-				node.treeNodes[2] = BuildTree(x, y + longestDimension / 2, longestDimension / 2);
-				node.treeNodes[3] = BuildTree(x + longestDimension / 2, y + longestDimension / 2, longestDimension / 2);
-
-				//find min and max values
-				node.min = node.treeNodes[0].min;
-				node.min = node.treeNodes[1].min < node.min ? node.treeNodes[1].min : node.min;
-				node.min = node.treeNodes[2].min < node.min ? node.treeNodes[2].min : node.min;
-				node.min = node.treeNodes[3].min < node.min ? node.treeNodes[3].min : node.min;
-
-				node.max = node.treeNodes[0].max;
-				node.max = node.treeNodes[1].max > node.max ? node.treeNodes[1].max : node.max;
-				node.max = node.treeNodes[2].max > node.max ? node.treeNodes[2].max : node.max;
-				node.max = node.treeNodes[3].max > node.max ? node.treeNodes[3].max : node.max;
-
-				return node;
-			}
-		}
-	}
-
 	public void GenerateMesh()
 	{
-		int dim = world.CellResolution > world.CellResolution ? world.CellResolution : world.CellResolution;
-		dim = TwoPow(Mathf.CeilToInt(Mathf.Log(dim, 2)));
-
-		GenerateTree(dim);
-
 		mesh.Clear();
 
-		//vertices = new List<Vector3>();
-		//triangles = new List<int>();
-
-		vertices.Clear();
-		triangles.Clear();
-
-		//if entire chunk is full just make one big quad
-		if (world.ValueThreshold <= tree.min)
+		if (vertices == null || triangles == null || vertexColor == null)
 		{
-			tree.Collapse();
-			AddQuad(
-				GetPointFromIndex(0, 0),
-				GetPointFromIndex(0, world.CellResolution),
-				GetPointFromIndex(world.CellResolution, world.CellResolution),
-				GetPointFromIndex(world.CellResolution, 0)
-				);
-
+			vertices = new List<Vector3>();
+			triangles = new List<int>();
+			vertexColor = new List<Color32>();
 		}
 		else
-			ContourSubTree(tree, 0, 0, dim);
+		{
+			vertices.Clear();
+			triangles.Clear();
+			vertexColor.Clear();
+		}
+		
+		for (int x = 0; x < world.CellResolution; x++)
+		{
+			for (int y = 0; y < world.CellResolution; y++)
+			{
+				March(x, y);
 
+				//REMEMBER TO REPLACE THIS!!!!
+				while (vertexColor.Count < vertices.Count)
+				{
+					vertexColor.Add(pixels[x, y].GetPixelInfo());
+				}
+			}
+		}
 		//generate pixels connecting chunks
 		GenerateConnectingPixels();
 
 		mesh.indexFormat = vertices.Count >= 65535 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16;
-		mesh.vertices = vertices.ToArray();
-		mesh.triangles = triangles.ToArray();
+		mesh.SetVertices(vertices);
+		mesh.SetTriangles(triangles, 0);
+		mesh.SetColors(vertexColor);
 
 		//vertices = null;
 		//triangles = null;
-
-		//x and y are the bottom edges of the node
-		//length is the width, in cells, of the node
-		void ContourSubTree(TreeNode node, int x, int y, int len)
-		{
-			if (world.ValueThreshold > node.min)
-			{
-				if (world.ValueThreshold < node.max)
-				{
-					if (len == 1)
-					{
-						//march
-						March(x, y);
-					}
-					else
-					{
-						ContourSubTree(node.treeNodes[0], x, y, len / 2);
-						ContourSubTree(node.treeNodes[1], x + len / 2, y, len / 2);
-						ContourSubTree(node.treeNodes[2], x, y + len / 2, len / 2);
-						ContourSubTree(node.treeNodes[3], x + len / 2, y + len / 2, len / 2);
-					}
-				}
-				else
-				{
-					node.Collapse();
-				}
-			}
-			else
-			{
-				//draw quad
-				AddQuad(
-				GetPointFromIndex(x, y),
-				GetPointFromIndex(x, y + len),
-				GetPointFromIndex(x + len, y + len),
-				GetPointFromIndex(x + len, y)
-				);
-				node.Collapse();
-			}
-		}
+		//vertexColor = null;
 	}
 
 	public void March(int x, int y)
 	{
 		byte cellType = GetCellType(x, y);
-
 		switch (cellType)
 		{
 			//case 0:
@@ -742,13 +643,13 @@ public class PixelChunk : MonoBehaviour
 	{
 		byte cellType = 0;
 
-		if (pixels[x, y].value > world.ValueThreshold)
+		if (pixels[x, y].Value > world.ValueThreshold)
 			cellType = 0b0001;
-		if (pixels[x + 1, y].value > world.ValueThreshold)
+		if (pixels[x + 1, y].Value > world.ValueThreshold)
 			cellType |= 0b0010;
-		if (pixels[x, y + 1].value > world.ValueThreshold)
+		if (pixels[x, y + 1].Value > world.ValueThreshold)
 			cellType |= 0b0100;
-		if (pixels[x + 1, y + 1].value > world.ValueThreshold)
+		if (pixels[x + 1, y + 1].Value > world.ValueThreshold)
 			cellType |= 0b1000;
 
 		return cellType;
@@ -773,8 +674,8 @@ public class PixelChunk : MonoBehaviour
 	{
 
 		return ! //not
-			((pixels[x, y].value > world.ValueThreshold && pixels[x + 1, y].value > world.ValueThreshold && pixels[x, y + 1].value > world.ValueThreshold && pixels[x + 1, y + 1].value > world.ValueThreshold) // cell full
-			|| (pixels[x, y].value < world.ValueThreshold && pixels[x + 1, y].value < world.ValueThreshold && pixels[x, y + 1].value < world.ValueThreshold && pixels[x + 1, y + 1].value < world.ValueThreshold)); // cell empty
+			((pixels[x, y].Value > world.ValueThreshold && pixels[x + 1, y].Value > world.ValueThreshold && pixels[x, y + 1].Value > world.ValueThreshold && pixels[x + 1, y + 1].Value > world.ValueThreshold) // cell full
+			|| (pixels[x, y].Value < world.ValueThreshold && pixels[x + 1, y].Value < world.ValueThreshold && pixels[x, y + 1].Value < world.ValueThreshold && pixels[x + 1, y + 1].Value < world.ValueThreshold)); // cell empty
 	}
 
 	//used to check if a physics edge has already been found
@@ -1341,7 +1242,6 @@ public class PixelChunk : MonoBehaviour
 		vertices.Add(a);
 		vertices.Add(b);
 		vertices.Add(c);
-
 	}
 
 	void AddQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
@@ -1377,17 +1277,40 @@ public class PixelChunk : MonoBehaviour
 		vertices.Add(e);
 	}
 
+	void AddTriVertexColour(Color32 colour)
+	{
+		vertexColor.Add(colour);
+		vertexColor.Add(colour);
+		vertexColor.Add(colour);
+	}
+	void AddQuadVertexColour(Color32 colour)
+	{
+		vertexColor.Add(colour);
+		vertexColor.Add(colour);
+		vertexColor.Add(colour);
+		vertexColor.Add(colour);
+	}
+	void AddPentagonVertexColour(Color32 colour)
+	{
+		vertexColor.Add(colour);
+		vertexColor.Add(colour);
+		vertexColor.Add(colour);
+		vertexColor.Add(colour);
+		vertexColor.Add(colour);
+	}
+
+
 	Vector2 GetPointBetweenPoints(int x1, int y1, int x2, int y2)
 	{
-		float v1 = pixels[x1, y1].value;
-		float v2 = pixels[x2, y2].value;
+		float v1 = pixels[x1, y1].Value;
+		float v2 = pixels[x2, y2].Value;
 		float t = (world.ValueThreshold - v1) / (v2 - v1);
 
 		return Vector3.Lerp(GetPointFromIndex(x1, y1), GetPointFromIndex(x2, y2), t);
 	}
 	Vector2 GetPointBetweenPoints(Pixel aPixel, Vector2 aPos, Pixel bPixel, Vector2 bPos)
 	{
-		float t = (world.ValueThreshold - aPixel.value) / (bPixel.value - aPixel.value);
+		float t = (world.ValueThreshold - aPixel.Value) / (bPixel.Value - aPixel.Value);
 		return Vector3.Lerp(aPos, bPos, t);
 	}
 
@@ -1407,6 +1330,10 @@ public class PixelChunk : MonoBehaviour
 			for (int y = 0; y < world.CellResolution; y++)
 			{
 				MarchConnectingCell(new Vector2Int(x1, y), GetVertCellType(y), pixels[x1, y], Right.pixels[x2, y], pixels[x1, y + 1], Right.pixels[x2, y + 1]);
+				while (vertexColor.Count < vertices.Count)
+				{
+					vertexColor.Add(pixels[x1, y].GetPixelInfo());
+				}
 			}
 		}
 
@@ -1419,6 +1346,10 @@ public class PixelChunk : MonoBehaviour
 			for (int x= 0; x < world.CellResolution; x++)
 			{
 				MarchConnectingCell(new Vector2Int(x, y1), GetHorCellType(x), pixels[x, y1], pixels[x + 1, y1], Up.pixels[x, y2], Up.pixels[x + 1, y2]);
+				while (vertexColor.Count < vertices.Count)
+				{
+					vertexColor.Add(pixels[x, y1].GetPixelInfo());
+				}
 			}
 		}
 
@@ -1428,19 +1359,24 @@ public class PixelChunk : MonoBehaviour
 			MarchConnectingCell(new Vector2Int(world.CellResolution, world.CellResolution), 
 				GetDiagCellType(), pixels[world.CellResolution, world.CellResolution], Right.pixels[0, world.CellResolution], 
 				Up.pixels[world.CellResolution, 0], RightUp.pixels[0, 0]);
+
+			while (vertexColor.Count < vertices.Count)
+			{
+				vertexColor.Add(pixels[world.CellResolution, world.CellResolution].GetPixelInfo());
+			}
 		}
 
 		byte GetVertCellType(int y)
 		{
 			byte cellType = 0;
 
-			if (pixels[world.CellResolution, y].value > world.ValueThreshold)
+			if (pixels[world.CellResolution, y].Value > world.ValueThreshold)
 				cellType = 0b0001;
-			if (Right.pixels[0, y].value > world.ValueThreshold)
+			if (Right.pixels[0, y].Value > world.ValueThreshold)
 				cellType |= 0b0010;
-			if (pixels[world.CellResolution, y + 1].value > world.ValueThreshold)
+			if (pixels[world.CellResolution, y + 1].Value > world.ValueThreshold)
 				cellType |= 0b0100;
-			if (Right.pixels[0, y + 1].value > world.ValueThreshold)
+			if (Right.pixels[0, y + 1].Value > world.ValueThreshold)
 				cellType |= 0b1000;
 
 			return cellType;
@@ -1450,13 +1386,13 @@ public class PixelChunk : MonoBehaviour
 		{
 			byte cellType = 0;
 
-			if (pixels[x, world.CellResolution].value > world.ValueThreshold)
+			if (pixels[x, world.CellResolution].Value > world.ValueThreshold)
 				cellType = 0b0001;
-			if (pixels[x + 1, world.CellResolution].value > world.ValueThreshold)
+			if (pixels[x + 1, world.CellResolution].Value > world.ValueThreshold)
 				cellType |= 0b0010;
-			if (Up.pixels[x, 0].value > world.ValueThreshold)
+			if (Up.pixels[x, 0].Value > world.ValueThreshold)
 				cellType |= 0b0100;
-			if (Up.pixels[x + 1, 0].value > world.ValueThreshold)
+			if (Up.pixels[x + 1, 0].Value > world.ValueThreshold)
 				cellType |= 0b1000;
 
 			return cellType;
@@ -1466,13 +1402,13 @@ public class PixelChunk : MonoBehaviour
 		{
 			byte cellType = 0;
 
-			if (pixels[world.CellResolution, world.CellResolution].value > world.ValueThreshold)
+			if (pixels[world.CellResolution, world.CellResolution].Value > world.ValueThreshold)
 				cellType = 0b0001;
-			if (Right.pixels[0, world.CellResolution].value > world.ValueThreshold)
+			if (Right.pixels[0, world.CellResolution].Value > world.ValueThreshold)
 				cellType |= 0b0010;
-			if (Up.pixels[world.CellResolution, 0].value > world.ValueThreshold)
+			if (Up.pixels[world.CellResolution, 0].Value > world.ValueThreshold)
 				cellType |= 0b0100;
-			if (RightUp.pixels[0, 0].value > world.ValueThreshold)
+			if (RightUp.pixels[0, 0].Value > world.ValueThreshold)
 				cellType |= 0b1000;
 
 			return cellType;
@@ -1696,7 +1632,7 @@ public class PixelChunk : MonoBehaviour
 	//	{
 	//		for (int y = 0; y < pixels.GetLength(1); y++)
 	//		{
-	//			Gizmos.color = pixels[x, y].value > map.ValueThreshold ? Color.black : Color.white;
+	//			Gizmos.color = pixels[x, y].Value > map.ValueThreshold ? Color.black : Color.white;
 	//			Gizmos.DrawCube(GetPointFromIndex(x, y) * map.CellSize, new Vector3(0.15f,0.15f, 0.001f));
 	//		}
 	//	}

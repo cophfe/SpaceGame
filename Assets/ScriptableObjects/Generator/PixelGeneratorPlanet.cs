@@ -8,9 +8,10 @@ public class PixelGeneratorPlanet : PixelGenerators
 	public float planetRadius = 50; //radius of the actual planet in cells
 	public float planetAtmosphereSize = 30; //height of the atmosphere in cells
 	public NoiseData[] surfaceNoise = new NoiseData[0];
+	public Pixel.MaterialType groundMaterial = Pixel.MaterialType.Stone;
 	public int mountainSeed = 1;
 
-	
+
 	protected override sealed void OnEnable()
 	{
 		base.OnEnable();
@@ -47,7 +48,9 @@ public class PixelGeneratorPlanet : PixelGenerators
 					radiusVarience += surfaceNoise[i].Sample(noiseSample);
 				}
 
-				pixels[x, y].value = Mathf.Clamp01((planetRadius + radiusVarience) * cellSize + valueThreshold - (position).magnitude);
+				pixels[x, y].value1 = Mathf.Clamp01((planetRadius + radiusVarience) * cellSize + valueThreshold - (position).magnitude);
+				pixels[x, y].type1 = pixels[x, y].value1 <= 0 ? Pixel.MaterialType.None : groundMaterial;
+				pixels[x, y].type2 = Pixel.MaterialType.None;
 			}
 		}
 		return pixels;

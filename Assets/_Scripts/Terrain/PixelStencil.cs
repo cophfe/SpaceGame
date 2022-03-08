@@ -13,7 +13,10 @@ public enum StencilType : byte
 public abstract class PixelStencil
 {
 	//gets whether a pixel in the modifier bounding box should be modified or not
-	public abstract bool ShouldModify(Vector2 position, PixelModifier modifier);
+	public virtual bool ShouldModify(Vector2 position, PixelModifier modifier, ref Pixel pixel)
+	{
+		return modifier.IsRemoving() || pixel.HasMaterial(modifier.PixelMaterial);
+	}
 
 	//gets the target value for the stencil
 	public abstract float GetTargetValue(Vector2 position, PixelModifier modifier);
@@ -32,9 +35,9 @@ public class PixelStencilCircle : PixelStencil
 
 	}
 
-	public override bool ShouldModify(Vector2 position, PixelModifier modifier)
+	public override bool ShouldModify(Vector2 position, PixelModifier modifier, ref Pixel pixel)
 	{
-		return true;
+		return base.ShouldModify(position, modifier, ref pixel);
 	}
 
 	//note: do not need to get pixel value, since target value does not rely on previous value
@@ -67,9 +70,9 @@ public class PixelStencilRectangle : PixelStencil
 
 	}
 
-	public override bool ShouldModify(Vector2 position, PixelModifier modifier)
+	public override bool ShouldModify(Vector2 position, PixelModifier modifier, ref Pixel pixel)
 	{
-		return true;
+		return base.ShouldModify(position, modifier, ref pixel);
 	}
 
 	public sealed override float GetTargetValue(Vector2 position, PixelModifier modifier)

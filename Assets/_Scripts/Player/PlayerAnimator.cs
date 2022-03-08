@@ -187,7 +187,7 @@ public class PlayerAnimator : MonoBehaviour
 
 		Vector2 hitPoint;
 		Vector2 hitNormal;
-		if (hit)
+		if (hit && controller.Motor.IsGrounded)
 		{
 			hitNormal = hit.normal;
 			hitPoint = hit.point; //+ (Vector2.Dot(controller.RB.velocity, hitTangent) * hitTangent * 0.1f);

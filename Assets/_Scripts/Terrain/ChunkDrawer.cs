@@ -10,6 +10,7 @@ public class ChunkDrawer : MonoBehaviour
 	#region Editors
 	[SerializeField, Min(0)] float modifyStrength = 4;
 	[SerializeField, Min(0)] float modifyRemoveStrength = 4;
+	[SerializeField] Pixel.MaterialType drawMaterial = Pixel.MaterialType.Dirt;
 	[SerializeField] Transform[] stencilVisualisations;
 	[SerializeField] Material stencilMaterial;
 	[SerializeField] bool snapToGrid = false;
@@ -23,24 +24,33 @@ public class ChunkDrawer : MonoBehaviour
 	PixelModifier modifier;
 	//input
 	bool actionButtonHeld = false;
+	//visualisation updating
+	bool isColliding = false;
 	#endregion
 
 	private void Awake()
 	{
-		modifier = new PixelModifier(modifyStrength, 2, ModifierType.AddOvertime, new PixelStencilCircle());
+		modifier = new PixelModifier(modifyStrength, 2, ModifierType.AddOvertime, drawMaterial, new PixelStencilCircle());
 		UpdateText();
 	}
 
 	private void OnValidate()
 	{
 		if (modifier != null)
+		{
 			modifier.Strength = modifyStrength;
+			modifier.PixelMaterial = drawMaterial;
+		}
 	}
 
 	private void Update()
 	{
-		bool isColliding = false;
+		modifier.Centre = GameManager.Instance.MainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+		UpdateVisualisation(isColliding);
+	}
 
+	private void FixedUpdate()
+	{
 		modifier.Centre = GameManager.Instance.MainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
 		foreach (var world in GameManager.Instance.Worlds)
@@ -68,8 +78,6 @@ public class ChunkDrawer : MonoBehaviour
 				break;
 			}
 		}
-
-		UpdateVisualisation(isColliding);
 	}
 
 	void UpdateVisualisation(bool enabled)

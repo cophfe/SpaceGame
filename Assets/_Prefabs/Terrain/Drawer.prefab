@@ -267,11 +267,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c6d2bdd1afe58841bfbbfc13c1549ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  modifyStrength: 10
+  modifyRemoveStrength: 10
+  drawMaterial: 2
   stencilVisualisations:
   - {fileID: 1232923696953680976}
   - {fileID: 1232923695560518810}
   stencilMaterial: {fileID: 2100000, guid: c39d8332d1bd51f419ee736108a7a1e5, type: 2}
-  snapToGrid: 1
+  snapToGrid: 0
+  radText: {fileID: 0}
+  modText: {fileID: 0}
+  strText: {fileID: 0}
+  shaText: {fileID: 0}
 --- !u!114 &1232923697217910109
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -314,19 +321,7 @@ MonoBehaviour:
     m_ActionId: 4e2d0e99-5d74-460f-adef-f66f84fe31a6
     m_ActionName: Player/Action[/Mouse/leftButton]
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1232923697217910106}
-        m_TargetAssemblyTypeName: ChunkDrawer, Assembly-CSharp
-        m_MethodName: OnSwitchFill
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: 69db8093-aed3-469a-881d-be0e86841aa5
     m_ActionName: Player/SwitchFill[/Keyboard/tab]
   - m_PersistentCalls:
@@ -361,8 +356,36 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 09bf7f65-3ee0-439c-97bc-cd49b68f7e09
     m_ActionName: Player/ChangeStencil[/Keyboard/shift]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1232923697217910106}
+        m_TargetAssemblyTypeName: ChunkDrawer, Assembly-CSharp
+        m_MethodName: OnChangeModifierType
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 3a8a1160-1794-4349-9662-e27541e6dcfa
+    m_ActionName: Player/ChangeModifierType[/Keyboard/capsLock]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 7d9dd9d1-e832-441b-a89d-91b89d3c5bc9
+    m_ActionName: Player/Move[/Keyboard/a,/Keyboard/d]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 3e1c7b9e-1ccf-4b4e-a8ba-2d9e3fb8ce07
+    m_ActionName: Player/Look[/Mouse/position]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 3f7bc31e-6513-485d-b9a8-166f040fd9e5
+    m_ActionName: Player/Jump[/Keyboard/space]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
-  m_DefaultActionMap: Player
+  m_DefaultActionMap: Edit
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}

@@ -12,7 +12,7 @@ public class Spring : MonoBehaviour
 	Rigidbody2D rb;
 	Vector2 localFixedPosition;
 	Vector2 lastPosition;
-	Vector2 velocity = Vector2.zero;
+	Vector2 velocity = Vector2.zero; //velocity is local
 	const float springHeight = 0;
 
 	private void Awake()
@@ -40,9 +40,9 @@ public class Spring : MonoBehaviour
 		}
 
 		//apply spring stuff
-		float extention = Vector2.Dot(direction, localFixedPosition - (Vector2)transform.localPosition);
-		velocity += direction * -springConstant * (springHeight - extention) * Time.deltaTime;
-		Vector2 dampForce = direction * Vector3.Dot(velocity, direction) * dampening * Time.deltaTime;
+		float extention = Vector2.Dot(localAxis, localFixedPosition - (Vector2)transform.localPosition);
+		velocity += localAxis * -springConstant * (springHeight - extention) * Time.deltaTime;
+		Vector2 dampForce = localAxis * Vector3.Dot(velocity, localAxis) * dampening * Time.deltaTime;
 		if (dampForce.sqrMagnitude > velocity.sqrMagnitude)
 			velocity = Vector2.zero;
 		else
