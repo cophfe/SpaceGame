@@ -393,7 +393,6 @@ public class PixelChunk : MonoBehaviour
 		return yes;
 	}
 
-
 	public void Generate()
 	{
 		edges = new List<EdgeNodeData>();
@@ -442,12 +441,6 @@ public class PixelChunk : MonoBehaviour
 			for (int y = 0; y < world.CellResolution; y++)
 			{
 				March(x, y);
-
-				//REMEMBER TO REPLACE THIS!!!!
-				while (vertexColor.Count < vertices.Count)
-				{
-					vertexColor.Add(pixels[x, y].GetPixelInfo());
-				}
 			}
 		}
 		//generate pixels connecting chunks
@@ -475,7 +468,8 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(x, y, x, y + 1),
 					GetPointBetweenPoints(x, y, x + 1, y)
 					);
-
+				AddTriVertexColour(pixels[x, y].GetPixelInfo());
+				
 				AddCellEdge(x, y, cellType);
 				break;
 			case 2:
@@ -484,6 +478,7 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(x, y, x + 1, y),
 					GetPointBetweenPoints(x + 1, y, x + 1, y + 1)
 					);
+				AddTriVertexColour(pixels[x + 1, y].GetPixelInfo());
 
 				AddCellEdge(x, y, cellType);
 				break;
@@ -494,6 +489,10 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(x + 1, y, x + 1, y + 1),
 					GetPointFromIndex(x + 1, y)
 					);
+				vertexColor.Add(pixels[x, y].GetPixelInfo());
+				vertexColor.Add(pixels[x, y].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y].GetPixelInfo());
 
 				AddCellEdge(x, y, cellType);
 				break;
@@ -503,6 +502,7 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(x, y + 1, x + 1, y + 1),
 					GetPointBetweenPoints(x, y + 1, x, y)
 					);
+				AddTriVertexColour(pixels[x, y + 1].GetPixelInfo());
 
 				AddCellEdge(x, y, cellType);
 				break;
@@ -513,6 +513,10 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(x, y + 1, x + 1, y + 1),
 					GetPointBetweenPoints(x, y, x + 1, y)
 					);
+				vertexColor.Add(pixels[x, y].GetPixelInfo());
+				vertexColor.Add(pixels[x, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x, y].GetPixelInfo());
 
 				AddCellEdge(x, y, cellType);
 				break;
@@ -522,11 +526,14 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(x, y + 1, x + 1, y + 1),
 					GetPointBetweenPoints(x, y + 1, x, y)
 					);
+				AddTriVertexColour(pixels[x, y + 1].GetPixelInfo());
+
 				AddTriangle(
 					GetPointFromIndex(x + 1, y),
 					GetPointBetweenPoints(x, y, x + 1, y),
 					GetPointBetweenPoints(x + 1, y, x + 1, y + 1)
 					);
+				AddTriVertexColour(pixels[x + 1, y].GetPixelInfo());
 
 				AddDoubleCellEdge(x, y, cellType);
 				break;
@@ -538,6 +545,11 @@ public class PixelChunk : MonoBehaviour
 					GetPointFromIndex(x + 1, y),
 					GetPointFromIndex(x, y)
 					);
+				vertexColor.Add(pixels[x, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y].GetPixelInfo());
+				vertexColor.Add(pixels[x, y].GetPixelInfo());
 
 				AddCellEdge(x, y, cellType);
 				break;
@@ -547,8 +559,9 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(x + 1, y + 1, x + 1, y),
 					GetPointBetweenPoints(x + 1, y + 1, x, y + 1)
 					);
+				AddTriVertexColour(pixels[x + 1, y].GetPixelInfo());
 
-				AddCellEdge(x, y, cellType);
+				AddCellEdge(x + 1, y + 1, cellType);
 				break;
 			case 9:
 				AddTriangle(
@@ -556,11 +569,14 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(x + 1, y + 1, x + 1, y),
 					GetPointBetweenPoints(x + 1, y + 1, x, y + 1)
 					);
+				AddTriVertexColour(pixels[x + 1, y + 1].GetPixelInfo());
+
 				AddTriangle(
 					GetPointFromIndex(x, y),
 					GetPointBetweenPoints(x, y, x, y + 1),
 					GetPointBetweenPoints(x, y, x + 1, y)
 					);
+				AddTriVertexColour(pixels[x, y].GetPixelInfo());
 
 				AddDoubleCellEdge(x, y, cellType);
 				break;
@@ -571,6 +587,10 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(x + 1, y, x, y),
 					GetPointBetweenPoints(x + 1, y + 1, x, y + 1)
 					);
+				vertexColor.Add(pixels[x + 1, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y + 1].GetPixelInfo());
 
 				AddCellEdge(x, y, cellType);
 				break;
@@ -582,6 +602,11 @@ public class PixelChunk : MonoBehaviour
 					GetPointFromIndex(x + 1, y + 1),
 					GetPointFromIndex(x + 1, y)
 					);
+				vertexColor.Add(pixels[x, y].GetPixelInfo());
+				vertexColor.Add(pixels[x, y].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y].GetPixelInfo());
 
 				AddCellEdge(x, y, cellType);
 				break;
@@ -592,6 +617,10 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(x + 1, y + 1, x + 1, y),
 					GetPointBetweenPoints(x, y + 1, x, y)
 					);
+				vertexColor.Add(pixels[x, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x, y + 1].GetPixelInfo());
 
 				AddCellEdge(x, y, cellType);
 				break;
@@ -603,6 +632,12 @@ public class PixelChunk : MonoBehaviour
 					GetPointFromIndex(x, y),
 					GetPointFromIndex(x, y + 1)
 					);
+				vertexColor.Add(pixels[x + 1, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x, y].GetPixelInfo());
+				vertexColor.Add(pixels[x, y].GetPixelInfo());
+				vertexColor.Add(pixels[x, y + 1].GetPixelInfo());
+
 
 				AddCellEdge(x, y, cellType);
 				break;
@@ -614,6 +649,11 @@ public class PixelChunk : MonoBehaviour
 					GetPointFromIndex(x, y + 1),
 					GetPointFromIndex(x + 1, y + 1)
 					);
+				vertexColor.Add(pixels[x + 1, y].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y].GetPixelInfo());
+				vertexColor.Add(pixels[x, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y + 1].GetPixelInfo());
 
 				AddCellEdge(x, y, cellType);
 				break;
@@ -624,6 +664,12 @@ public class PixelChunk : MonoBehaviour
 					GetPointFromIndex(x + 1, y + 1),
 					GetPointFromIndex(x + 1, y)
 					);
+				vertexColor.Add(pixels[x, y].GetPixelInfo());
+				vertexColor.Add(pixels[x, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y + 1].GetPixelInfo());
+				vertexColor.Add(pixels[x + 1, y].GetPixelInfo());
+
+
 				break;
 		}
 	}
@@ -1283,21 +1329,6 @@ public class PixelChunk : MonoBehaviour
 		vertexColor.Add(colour);
 		vertexColor.Add(colour);
 	}
-	void AddQuadVertexColour(Color32 colour)
-	{
-		vertexColor.Add(colour);
-		vertexColor.Add(colour);
-		vertexColor.Add(colour);
-		vertexColor.Add(colour);
-	}
-	void AddPentagonVertexColour(Color32 colour)
-	{
-		vertexColor.Add(colour);
-		vertexColor.Add(colour);
-		vertexColor.Add(colour);
-		vertexColor.Add(colour);
-		vertexColor.Add(colour);
-	}
 
 
 	Vector2 GetPointBetweenPoints(int x1, int y1, int x2, int y2)
@@ -1330,10 +1361,6 @@ public class PixelChunk : MonoBehaviour
 			for (int y = 0; y < world.CellResolution; y++)
 			{
 				MarchConnectingCell(new Vector2Int(x1, y), GetVertCellType(y), pixels[x1, y], Right.pixels[x2, y], pixels[x1, y + 1], Right.pixels[x2, y + 1]);
-				while (vertexColor.Count < vertices.Count)
-				{
-					vertexColor.Add(pixels[x1, y].GetPixelInfo());
-				}
 			}
 		}
 
@@ -1346,10 +1373,6 @@ public class PixelChunk : MonoBehaviour
 			for (int x= 0; x < world.CellResolution; x++)
 			{
 				MarchConnectingCell(new Vector2Int(x, y1), GetHorCellType(x), pixels[x, y1], pixels[x + 1, y1], Up.pixels[x, y2], Up.pixels[x + 1, y2]);
-				while (vertexColor.Count < vertices.Count)
-				{
-					vertexColor.Add(pixels[x, y1].GetPixelInfo());
-				}
 			}
 		}
 
@@ -1359,11 +1382,6 @@ public class PixelChunk : MonoBehaviour
 			MarchConnectingCell(new Vector2Int(world.CellResolution, world.CellResolution), 
 				GetDiagCellType(), pixels[world.CellResolution, world.CellResolution], Right.pixels[0, world.CellResolution], 
 				Up.pixels[world.CellResolution, 0], RightUp.pixels[0, 0]);
-
-			while (vertexColor.Count < vertices.Count)
-			{
-				vertexColor.Add(pixels[world.CellResolution, world.CellResolution].GetPixelInfo());
-			}
 		}
 
 		byte GetVertCellType(int y)
@@ -1432,6 +1450,7 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(bL, bottomLeft, tL, topLeft),
 					GetPointBetweenPoints(bL, bottomLeft, bR, bottomRight)
 					);
+				AddTriVertexColour(bL.GetPixelInfo());
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1441,6 +1460,7 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(bL, bottomLeft, bR, bottomRight),
 					GetPointBetweenPoints(bR, bottomRight, tR, topRight)
 					);
+				AddTriVertexColour(bR.GetPixelInfo());
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1451,6 +1471,10 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(bR, bottomRight, tR, topRight),
 					bottomRight
 					);
+				vertexColor.Add(bL.GetPixelInfo());
+				vertexColor.Add(bL.GetPixelInfo());
+				vertexColor.Add(bR.GetPixelInfo());
+				vertexColor.Add(bR.GetPixelInfo());
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1460,6 +1484,7 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(tL, topLeft, tR, topRight),
 					GetPointBetweenPoints(tL, topLeft, bL, bottomLeft)
 					);
+				AddTriVertexColour(tL.GetPixelInfo());
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1470,6 +1495,10 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(tL, topLeft, tR, topRight),
 					GetPointBetweenPoints(bL, bottomLeft, bR, bottomRight)
 					);
+				vertexColor.Add(bL.GetPixelInfo());
+				vertexColor.Add(tL.GetPixelInfo());
+				vertexColor.Add(tL.GetPixelInfo());
+				vertexColor.Add(bL.GetPixelInfo());
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1479,11 +1508,14 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(tL, topLeft, tR, topRight),
 					GetPointBetweenPoints(tL, topLeft, bL, bottomLeft)
 					);
+				AddTriVertexColour(tL.GetPixelInfo());
+
 				AddTriangle(
 					bottomRight,
 					GetPointBetweenPoints(bL, bottomLeft, bR, bottomRight),
 					GetPointBetweenPoints(bR, bottomRight, tR, topRight)
 					);
+				AddTriVertexColour(bR.GetPixelInfo());
 
 				AddDoubleCellEdge(index.x, index.y, cellType);
 				break;
@@ -1495,6 +1527,11 @@ public class PixelChunk : MonoBehaviour
 					bottomRight,
 					bottomLeft
 					);
+				vertexColor.Add(tL.GetPixelInfo());
+				vertexColor.Add(tL.GetPixelInfo());
+				vertexColor.Add(bR.GetPixelInfo());
+				vertexColor.Add(bR.GetPixelInfo());
+				vertexColor.Add(bL.GetPixelInfo());
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1504,6 +1541,8 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(tR, topRight, bR, bottomRight),
 					GetPointBetweenPoints(tR, topRight, tL, topLeft)
 					);
+				AddTriVertexColour(bR.GetPixelInfo());
+
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1513,11 +1552,14 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(tR, topRight, bR, bottomRight),
 					GetPointBetweenPoints(tR, topRight, tL, topLeft)
 					);
+				AddTriVertexColour(tR.GetPixelInfo());
+
 				AddTriangle(
 					bottomLeft,
 					GetPointBetweenPoints(bL, bottomLeft, tL, topLeft),
 					GetPointBetweenPoints(bL, bottomLeft, bR, bottomRight)
 					);
+				AddTriVertexColour(bL.GetPixelInfo());
 
 				AddDoubleCellEdge(index.x, index.y, cellType);
 				break;
@@ -1528,6 +1570,10 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(bR, bottomRight, bL, bottomLeft),
 					GetPointBetweenPoints(tR, topRight, tL, topLeft)
 					);
+				vertexColor.Add(tR.GetPixelInfo());
+				vertexColor.Add(bR.GetPixelInfo());
+				vertexColor.Add(bR.GetPixelInfo());
+				vertexColor.Add(tR.GetPixelInfo());
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1539,6 +1585,11 @@ public class PixelChunk : MonoBehaviour
 					topRight,
 					bottomRight
 					);
+				vertexColor.Add(bL.GetPixelInfo());
+				vertexColor.Add(bL.GetPixelInfo());
+				vertexColor.Add(tR.GetPixelInfo());
+				vertexColor.Add(tR.GetPixelInfo());
+				vertexColor.Add(bR.GetPixelInfo());
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1549,6 +1600,10 @@ public class PixelChunk : MonoBehaviour
 					GetPointBetweenPoints(tR, topRight, bR, bottomRight),
 					GetPointBetweenPoints(tL, topLeft, bL, bottomLeft)
 					);
+				vertexColor.Add(tL.GetPixelInfo());
+				vertexColor.Add(tR.GetPixelInfo());
+				vertexColor.Add(tR.GetPixelInfo());
+				vertexColor.Add(tL.GetPixelInfo());
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1560,6 +1615,11 @@ public class PixelChunk : MonoBehaviour
 					bottomLeft,
 					topLeft
 					);
+				vertexColor.Add(tR.GetPixelInfo());
+				vertexColor.Add(tR.GetPixelInfo());
+				vertexColor.Add(bL.GetPixelInfo());
+				vertexColor.Add(bL.GetPixelInfo());
+				vertexColor.Add(tL.GetPixelInfo());
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1571,6 +1631,11 @@ public class PixelChunk : MonoBehaviour
 					topLeft,
 					topRight
 					);
+				vertexColor.Add(bR.GetPixelInfo());
+				vertexColor.Add(bR.GetPixelInfo());
+				vertexColor.Add(tL.GetPixelInfo());
+				vertexColor.Add(tL.GetPixelInfo());
+				vertexColor.Add(tR.GetPixelInfo());
 
 				AddCellEdge(index.x, index.y, cellType);
 				break;
@@ -1581,6 +1646,11 @@ public class PixelChunk : MonoBehaviour
 					topRight,
 					bottomRight
 					);
+				vertexColor.Add(bL.GetPixelInfo());
+				vertexColor.Add(tL.GetPixelInfo());
+				vertexColor.Add(tR.GetPixelInfo());
+				vertexColor.Add(bR.GetPixelInfo());
+
 				break;
 		}
 	}

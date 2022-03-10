@@ -44,33 +44,34 @@ public class PixelModifier
 	{
 		//calls the correct apply function based on the modifier type
 		//I'm not sure if this is better than a switch statement honestly. its definitely messier.
-
-		if (stencil.ShouldModify(position, this, ref pixel))
-			return apply[(int)modifierType](ref pixel, position, this);
-
-		return 0;
+		return apply[(int)modifierType](ref pixel, position, this);
 	}
 
 	#region Apply Functions
 	static float ApplyFill(ref Pixel pixel, Vector2 position, PixelModifier modifier)
 	{
-		float targetValue = modifier.stencil.GetTargetValue(position, modifier);
-		if (pixel.type1 == modifier.material || (pixel.type2 != modifier.material && pixel.value1 == 0))
+		if (modifier.stencil.ShouldModify(position, modifier, ref pixel))
 		{
-			pixel.type1 = modifier.material;
-			float oldValue = pixel.value1;
-			float newValue = Mathf.Clamp(targetValue, oldValue, 1 - pixel.value2);
-			pixel.value1 = newValue;
-			return newValue - oldValue;
+			float targetValue = modifier.stencil.GetTargetValue(position, modifier);
+			if (pixel.type1 == modifier.material || (pixel.type2 != modifier.material && pixel.value1 == 0))
+			{
+				pixel.type1 = modifier.material;
+				float oldValue = pixel.value1;
+				float newValue = Mathf.Clamp(targetValue, oldValue, 1 - pixel.value2);
+				pixel.value1 = newValue;
+				return newValue - oldValue;
+			}
+			else
+			{
+				pixel.type2 = modifier.material;
+				float oldValue = pixel.value2;
+				float newValue = Mathf.Clamp(targetValue, oldValue, 1 - pixel.value1);
+				pixel.value2 = newValue;
+				return newValue - oldValue;
+			}
 		}
 		else
-		{
-			pixel.type2 = modifier.material;
-			float oldValue = pixel.value2;
-			float newValue = Mathf.Clamp(targetValue, oldValue, 1 - pixel.value1);
-			pixel.value2 = newValue;
-			return newValue - oldValue;
-		}
+			return 0;
 	}
 
 	static float ApplyDelete(ref Pixel pixel, Vector2 position, PixelModifier modifier)
@@ -87,23 +88,43 @@ public class PixelModifier
 
 	static float ApplyAdd(ref Pixel pixel, Vector2 position, PixelModifier modifier)
 	{
-		float targetValue = modifier.stencil.GetTargetValue(position, modifier);
-		if (pixel.type1 == modifier.material || (pixel.type2 != modifier.material && pixel.value1 == 0))
+		if (modifier.stencil.ShouldModify(position, modifier, ref pixel))
 		{
-			pixel.type1 = modifier.material;
-			float oldValue = pixel.value1;
-			float newValue = Mathf.Clamp(Mathf.MoveTowards(oldValue, targetValue, modifier.strength * Time.deltaTime), oldValue, 1 - pixel.value2);
-			pixel.value1 = newValue;
-			return newValue - oldValue;
+			float targetValue = modifier.stencil.GetTargetValue(position, modifier);
+			if (pixel.type1 == modifier.material || (pixel.type2 != modifier.material && pixel.value1 == 0))
+			{
+				pixel.type1 = modifier.material;
+				float oldValue = pixel.value1;
+				float newValue = Mathf.Clamp(Mathf.MoveTowards(oldValue, targetValue, modifier.strength * Time.deltaTime), oldValue, 1 - pixel.value2);
+				pixel.value1 = newValue;
+				return newValue - oldValue;
+			}
+			else
+			{
+				pixel.type2 = modifier.material;
+				float oldValue = pixel.value2;
+				float newValue = Mathf.Clamp(Mathf.MoveTowards(oldValue, targetValue, modifier.strength * Time.deltaTime), oldValue, 1 - pixel.value1);
+				pixel.value2 = newValue;
+				return newValue - oldValue;
+			}
 		}
 		else
 		{
-			pixel.type2 = modifier.material;
-			float oldValue = pixel.value2;
-			float newValue = Mathf.Clamp(Mathf.MoveTowards(oldValue, targetValue, modifier.strength * Time.deltaTime), oldValue, 1 - pixel.value1);
-			pixel.value2 = newValue;
-			return newValue - oldValue;
+			if (pixel.Value < modifier.map.ValueThreshold)
+			{
+				return ApplyRemove(ref pixel, position, modifier);
+
+				//if (pixel.value1 < pixel.value2)
+				//{
+				//}
+				//else
+				//{
+				//	return ApplyRemove(ref pixel, position, modifier);
+				//}
+			}
+			return 0;
 		}
+		
 		
 	}
 

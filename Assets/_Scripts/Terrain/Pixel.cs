@@ -30,6 +30,9 @@ public struct Pixel
 		Dirt,
 		Stone,
 		Grass,
+		Mud,
+		Leaves,
+		Metal,
 		Count,
 		None
 	}

@@ -62,7 +62,7 @@ public class TextureArrayMaker
 
 			texArray.Apply();
 
-			string newPath = $"{path}/{Selection.activeObject.name} Texture2DArray";
+			string newPath = $"{path}/{Selection.activeObject.name}Array";
 			string newPathNum = newPath + ".asset";
 			int j = 0;
 			while (File.Exists(newPathNum))

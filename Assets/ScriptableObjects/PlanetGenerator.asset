@@ -15,13 +15,14 @@ MonoBehaviour:
   cellResolution: 32
   cellSize: 0.5
   valueThreshold: 0.5
-  planetRadius: 300
+  planetRadius: 60
   planetAtmosphereSize: 30
   surfaceNoise:
-  - frequency: 5
-    strength: 20
-  - frequency: 10
-    strength: 10
-  - frequency: 20
-    strength: 5
+  - frequency: 2
+    strength: 9
+  - frequency: 4
+    strength: 6
+  - frequency: 8
+    strength: 3
+  groundMaterial: 1
   mountainSeed: 1

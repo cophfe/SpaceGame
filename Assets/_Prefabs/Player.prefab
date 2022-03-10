@@ -874,9 +874,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73d0ff31cdeec8d4ea9ce69ce694e0f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  springConstant: 2000
+  springConstant: 2153
   dampening: 25.6
-  maxDistance: 0.03
+  maxDistance: 0.05
   localAxis: {x: 0, y: 1}
 --- !u!1 &3262664139922255393
 GameObject:
@@ -1679,7 +1679,7 @@ MonoBehaviour:
   handSpeed: 0.014
   handSpeedAirMod: 2
   handSpeedRunMod: 1
-  elbowSpeed: 3
+  elbowSpeed: 8
   inAirHandOffset: 0.2
   runHandDistance: 0.75
   runLowerAngle: 19
