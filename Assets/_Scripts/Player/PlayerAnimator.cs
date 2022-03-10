@@ -7,6 +7,7 @@ public class PlayerAnimator : MonoBehaviour
 	#region Editor
 	[Header("Body Turn")]
 	[SerializeField] float turnSpeedMax = 5;
+	[SerializeField] float turnChangeSpeed = 5;
 	[SerializeField] float minMaxOffset = 0.05f;
 
 	[Header("Body Bob")]
@@ -56,7 +57,7 @@ public class PlayerAnimator : MonoBehaviour
 	#endregion
 	public bool PlayerPointingLeft { get; private set; } = false;
 	public float PlayerHorizontalSpeed { get; private set; } = 0;
-	public bool PlayerIsWalking { get { return PlayerHorizontalSpeed * PlayerHorizontalSpeed > 0.1f * 0.1f; } }
+	public bool PlayerIsWalking { get; private set; }
 
 	#region Private
 	//References
@@ -115,11 +116,27 @@ public class PlayerAnimator : MonoBehaviour
 	{
 		Vector2 tangent = Vector2.Perpendicular(controller.Motor.UpDirection);
 		PlayerHorizontalSpeed = -Vector2.Dot(tangent, controller.RB.velocity);
+		PlayerIsWalking = PlayerHorizontalSpeed * PlayerHorizontalSpeed > 0.1f * 0.1f;
 
 		//switch if velocity is above minimum
-		if (PlayerHorizontalSpeed * PlayerHorizontalSpeed > 2 * 2)
+		if (PlayerHorizontalSpeed * PlayerHorizontalSpeed > 2 * 2 && PlayerPointingLeft != PlayerHorizontalSpeed < 0)
 		{
 			PlayerPointingLeft = PlayerHorizontalSpeed < 0;
+
+			
+			leftFoot.bendDirectionIsLeft = PlayerPointingLeft;
+			rightFoot.bendDirectionIsLeft = PlayerPointingLeft;
+		}
+
+		if (PlayerIsWalking)
+		{
+			SetBendDirection(ref leftArm);
+			SetBendDirection(ref rightArm);
+		}
+		else
+		{
+			leftArm.bendDirectionIsLeft = false;
+			rightArm.bendDirectionIsLeft = true;
 		}
 
 		MoveFoot(ref leftFoot, leftTurnToStep, ref rightFoot);
@@ -139,6 +156,15 @@ public class PlayerAnimator : MonoBehaviour
 		CalculateArm(ref rightArm);
 
 		TurnBody();
+	}
+
+	void SetBendDirection (ref ArmInfo arm)
+	{
+		if (arm.bendDirectionIsLeft == PlayerPointingLeft)
+		{
+			arm.bendDirectionIsLeft = !PlayerPointingLeft;
+			arm.SetOrdered(arm.bendDirectionIsLeft == !arm.isLeftArm);
+		}
 	}
 
 	void BobBody()
@@ -234,9 +260,6 @@ public class PlayerAnimator : MonoBehaviour
 			}
 			else
 				return;
-			
-			
-			
 		}
 
 		if (foot.attachedToGround)
@@ -252,9 +275,6 @@ public class PlayerAnimator : MonoBehaviour
 				foot.normal = hitNormal;
 
 				foot.attachedToGround = false;
-
-				foot.bendDirectionIsLeft = PlayerPointingLeft;
-
 			}
 			//if the foot has strode to far from the objective, reasses
 			else if ((canStep && (foot.target - hitPoint).SqrMagnitude() > strideLength * strideLength)
@@ -266,8 +286,6 @@ public class PlayerAnimator : MonoBehaviour
 				foot.normal = hitNormal;
 
 				foot.attachedToGround = false;
-
-				foot.bendDirectionIsLeft = PlayerPointingLeft;
 			}
 			else if (horizontalDistance < 0.02f)
 			{
@@ -311,13 +329,12 @@ public class PlayerAnimator : MonoBehaviour
 			foot.point = Vector2.LerpUnclamped(foot.lastPoint, foot.target, foot.footT) + arcHeightT * arc;
 			if (foot.footT >= 1)
 			{
-				foot.attachedToGround = true && hit;
+				foot.attachedToGround = hit;
 				leftTurnToStep = !leftTurnToStep;
 			}
 
 			//foot.point = Vector2.MoveTowards(foot.point, foot.target, (footSpeed + bodySpeed) * Time.deltaTime);
 			//foot.attachedToGround = (foot.point - foot.target).SqrMagnitude() < 0.00001f && hit;
-
 		}
 
 
@@ -361,11 +378,9 @@ public class PlayerAnimator : MonoBehaviour
 			foot.foot.position = foot.point;
 			targetMidPoint = startPos + deltaNorm * legTopLength;
 
-			int rotMod = 1;
 			if (foot.bendDirectionIsLeft)
 			{
 				foot.foot.localScale = new Vector3(-1, 1, 1);
-				rotMod = -1;
 			}
 			else
 			{
@@ -374,7 +389,7 @@ public class PlayerAnimator : MonoBehaviour
 			}
 
 			if (!foot.attachedToGround)
-				foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, rotMod * -Vector2.Angle(Vector2.up, controller.Motor.UpDirection)), footRotateSpeed * Time.deltaTime);
+				foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, controller.Motor.UpDirection)), footRotateSpeed * Time.deltaTime);
 			else
 				foot.foot.rotation = Quaternion.RotateTowards(foot.foot.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, foot.normal)), footRotateSpeed * Time.deltaTime);
 
@@ -382,14 +397,12 @@ public class PlayerAnimator : MonoBehaviour
 		else
 		{
 			float aAngle;
-			int rotMod = 1;
 
 			if (foot.bendDirectionIsLeft)
 			{
 				foot.foot.localScale = new Vector3(-1, 1, 1);
 				aAngle = Mathf.Atan2((foot.point.y - startPos.y),
 				(foot.point.x - startPos.x)) - Mathf.Acos((b * b + c * c - a * a) / (2 * b * c));
-				rotMod = -1;
 			}
 			else
 			{
@@ -440,12 +453,12 @@ public class PlayerAnimator : MonoBehaviour
 	{
 		if (arm.holdInfo.isHoldingItem)
 		{
-			Vector2 armDelta = arm.armAttachPoint.TransformPoint(arm.restPoint) - arm.armAttachPoint.position;
+			Vector2 armDelta = arm.restPoint - (Vector2)arm.armAttachPoint.localPosition;
 			Vector2 targetPosition = (Quaternion.Euler(0, 0, arm.holdInfo.handAngle) * armDelta).normalized * arm.holdInfo.handDistance;
 
 
 			arm.hand.position -= (Vector3)rBDelta;
-			arm.hand.position = Vector2.SmoothDamp(arm.hand.position, arm.armAttachPoint.TransformPoint(targetPosition), ref arm.handVelocity, handSpeed * handSpeedAirMod);
+			arm.hand.position = Vector2.SmoothDamp(arm.hand.position, arm.armAttachPoint.TransformPoint(targetPosition), ref arm.handVelocity, handSpeed );
 		}
 		else if (!controller.Motor.IsGrounded)
 		{
@@ -459,9 +472,6 @@ public class PlayerAnimator : MonoBehaviour
 		}
 		else if (PlayerIsWalking)
 		{
-			arm.bendDirectionIsLeft = !PlayerPointingLeft;
-			arm.SetOrdered(arm.bendDirectionIsLeft == !arm.isLeftArm); //this seems like a slow thing to set every frame but what do I know
-
 			Vector2 armDelta = arm.armAttachPoint.TransformPoint(arm.restPoint) - arm.armAttachPoint.position;
 			float distanceToHand = Mathf.Lerp(armDelta.magnitude, runHandDistance, Mathf.Abs(PlayerHorizontalSpeed) / runHorizontalMaxSpeed);
 			armDelta = (arm.armAttachPoint.TransformPoint(arm.restPoint) - arm.armAttachPoint.position).normalized * distanceToHand;
@@ -480,7 +490,6 @@ public class PlayerAnimator : MonoBehaviour
 		{
 			arm.rotateT = 0;
 		
-			arm.bendDirectionIsLeft = !arm.isLeftArm;
 
 			//keep object in same position as previous frame
 			arm.hand.position -= (Vector3)rBDelta;
@@ -546,7 +555,7 @@ public class PlayerAnimator : MonoBehaviour
 		arm.arm.SetPosition(2, Vector2.zero);
 
 		if (float.IsNaN(targetMidPoint.x) || float.IsNaN(targetMidPoint.y))
-			targetMidPoint = 0.5f * arm.arm.GetPosition(0);
+			targetMidPoint = startPos + 0.5f * (Vector2)arm.arm.GetPosition(0);
 
 		//if currentMidPoint is on the oppoisite side of the start position than target midpoint, clamp it to the correct side
 		Vector2 tangent = -TripleCross(targetMidPoint - startPos, controller.Motor.UpDirection, controller.Motor.UpDirection).normalized;
@@ -564,9 +573,16 @@ public class PlayerAnimator : MonoBehaviour
 
 	void TurnBody()
 	{
-		float turnPercent = Mathf.Clamp(-PlayerHorizontalSpeed, -turnSpeedMax, turnSpeedMax);
-		turnPercent = (turnPercent * (1- minMaxOffset)) / (2 * turnSpeedMax) + 0.5f;
-		bodyTurn.SetFloat(timeID, turnPercent);
+		
+		float turnPercent;
+		if (PlayerPointingLeft)
+			turnPercent = Mathf.Clamp(-PlayerHorizontalSpeed, 0, turnSpeedMax);
+		else 
+			turnPercent = Mathf.Clamp(-PlayerHorizontalSpeed, -turnSpeedMax, 0);
+
+		turnPercent = (turnPercent * (1 - minMaxOffset)) / (2 * turnSpeedMax) + 0.5f;
+		bodyTurn.SetFloat(timeID, Mathf.MoveTowards(bodyTurn.GetFloat(timeID), turnPercent, Time.deltaTime * turnChangeSpeed));
+		
 	}
 	//Perpendicular in direction is (direction x line) x line
 	Vector2 TripleCross(Vector2 a, Vector2 b, Vector2 c)
@@ -660,13 +676,13 @@ public class PlayerAnimator : MonoBehaviour
 		public Vector2 handVelocity;
 		[System.NonSerialized]
 		public bool isLeftArm;
-		[System.NonSerialized]
 		public HoldData holdInfo;
 
 		[System.NonSerialized]
 		SpriteRenderer handSprite;
 	}
 
+	[System.Serializable]
 	public struct HoldData
 	{
 		public bool isHoldingItem;
