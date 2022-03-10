@@ -705,7 +705,7 @@ LineRenderer:
   m_Positions:
   - {x: 0, y: 0.63829064, z: 0}
   - {x: 0.029949903, y: 0.31345534, z: 0}
-  - {x: 0, y: 0, z: 1}
+  - {x: 0, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 0.14
@@ -805,7 +805,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3262664139843433576}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.164, z: 0}
+  m_LocalPosition: {x: 0, y: 0.119, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3824490345115685712}
@@ -850,7 +850,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1710001597
   m_SortingLayer: 1
-  m_SortingOrder: 1
+  m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 7dae66fbd2b455a46b6c47bb07d67fbb, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -874,9 +874,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73d0ff31cdeec8d4ea9ce69ce694e0f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  springConstant: 2153
+  springConstant: 3153
   dampening: 25.6
-  maxDistance: 0.05
+  maxDistance: 0.035
   localAxis: {x: 0, y: 1}
 --- !u!1 &3262664139922255393
 GameObject:
@@ -1312,7 +1312,7 @@ LineRenderer:
   m_Positions:
   - {x: 0, y: 0.63829064, z: 0}
   - {x: 0.029949903, y: 0.31345534, z: 0}
-  - {x: 0, y: 0, z: 1}
+  - {x: 0, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 0.14
@@ -1396,6 +1396,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3262664140839944867}
   - component: {fileID: 3262664140839944892}
+  - component: {fileID: 1973048997}
   m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
@@ -1461,17 +1462,36 @@ SpriteRenderer:
   m_SortingLayerID: 1710001597
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: fdf959c74d9411a45a77a7a31309e54f, type: 3}
+  m_Sprite: {fileID: -9110866409713692369, guid: 4550a420b31f86848bd118a3e68be028, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.98, y: 1.108}
+  m_Size: {x: 0.872, y: 1.016}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &1973048997
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3262664140839944866}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: abe5e1c98a491ca498bbace9f51bfeda, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &3824490345115685715
 GameObject:
   m_ObjectHideFlags: 0
@@ -1545,7 +1565,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1710001597
   m_SortingLayer: 1
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 52b4c30cdd0db164ea981e49603369ad, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -1664,6 +1684,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6a054e978ffc094fb83b9b7124ab4f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  turnSpeedMax: 11
+  minMaxOffset: 0.5
   bobSpeed: 2.5
   bobMagnitude: 0.04
   bobCancelSpeed: 0.4
@@ -1927,8 +1949,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lookPoint: {fileID: 3824490345115685712}
   directionOffset: 0.1
-  maxHorizontalDistance: 0.12
-  maxVerticalDistance: 0.15
+  maxHorizontalDistance: 0.1
+  maxVerticalDistance: 0.11
   distanceMaxed: 5
   localRight: {x: 1, y: 0}
 --- !u!1 &4608555870714864736
@@ -2028,8 +2050,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lookPoint: {fileID: 3824490345115685712}
   directionOffset: 0.1
-  maxHorizontalDistance: 0.12
-  maxVerticalDistance: 0.15
+  maxHorizontalDistance: 0.1
+  maxVerticalDistance: 0.11
   distanceMaxed: 5
   localRight: {x: 1, y: 0}
 --- !u!1 &7488287513035305657

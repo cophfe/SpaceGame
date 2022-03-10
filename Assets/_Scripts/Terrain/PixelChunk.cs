@@ -1,5 +1,4 @@
-﻿#define TIMED
-//#define USE_POLYGONS
+﻿//#define TIMED
 
 using System.Collections;
 using System.Collections.Generic;

@@ -5,6 +5,10 @@ using UnityEngine;
 public class PlayerAnimator : MonoBehaviour
 {
 	#region Editor
+	[Header("Body Turn")]
+	[SerializeField] float turnSpeedMax = 5;
+	[SerializeField] float minMaxOffset = 0.05f;
+
 	[Header("Body Bob")]
 	[SerializeField] float bobSpeed = 1; 
 	[SerializeField] float bobMagnitude = 0.4f; 
@@ -57,14 +61,20 @@ public class PlayerAnimator : MonoBehaviour
 	#region Private
 	//References
 	PlayerController controller;
+	//other stuff
 	bool leftTurnToStep = true;
 	bool previousHit = false;
 	Vector2 lastPos;
+	//bob
 	Vector2 bobPosition;
 	float bobX = 0;
 
 	Vector2 lastRBPosition;
 	Vector2 rBDelta;
+	//animation
+	Animator bodyTurn;
+	int timeID;
+
 	#endregion
 
 	private void Awake()
@@ -90,7 +100,9 @@ public class PlayerAnimator : MonoBehaviour
 		leftFoot.leg.useWorldSpace = false;
 		rightFoot.leg.useWorldSpace = false;
 
-		
+		//turn
+		bodyTurn = GetComponentInChildren<Animator>();
+		timeID = Animator.StringToHash("Time");
 	}
 
 	private void Start()
@@ -125,6 +137,8 @@ public class PlayerAnimator : MonoBehaviour
 
 		CalculateArm(ref leftArm);
 		CalculateArm(ref rightArm);
+
+		TurnBody();
 	}
 
 	void BobBody()
@@ -424,7 +438,16 @@ public class PlayerAnimator : MonoBehaviour
 
 	void CalculateHand(ref ArmInfo arm)
 	{
-		if (!controller.Motor.IsGrounded)
+		if (arm.holdInfo.isHoldingItem)
+		{
+			Vector2 armDelta = arm.armAttachPoint.TransformPoint(arm.restPoint) - arm.armAttachPoint.position;
+			Vector2 targetPosition = (Quaternion.Euler(0, 0, arm.holdInfo.handAngle) * armDelta).normalized * arm.holdInfo.handDistance;
+
+
+			arm.hand.position -= (Vector3)rBDelta;
+			arm.hand.position = Vector2.SmoothDamp(arm.hand.position, arm.armAttachPoint.TransformPoint(targetPosition), ref arm.handVelocity, handSpeed * handSpeedAirMod);
+		}
+		else if (!controller.Motor.IsGrounded)
 		{
 			Vector2 newTargetPoint = arm.restPoint + controller.Motor.UpDirection * inAirHandOffset;
 
@@ -483,11 +506,9 @@ public class PlayerAnimator : MonoBehaviour
 			arm.hand.position = newHandPosition;
 			targetMidPoint = startPos + deltaNorm * armTopLength;
 
-			int rotMod = 1;
 			if (arm.bendDirectionIsLeft)
 			{
 				arm.hand.localScale = new Vector3(-1, 1, 1);
-				rotMod = -1;
 			}
 			else
 			{
@@ -495,20 +516,18 @@ public class PlayerAnimator : MonoBehaviour
 
 			}
 
-			arm.hand.rotation = Quaternion.RotateTowards(arm.hand.rotation, Quaternion.Euler(0, 0, rotMod * -Vector2.Angle(Vector2.up, controller.Motor.UpDirection)), footRotateSpeed * Time.deltaTime);
+			arm.hand.rotation = Quaternion.RotateTowards(arm.hand.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, controller.Motor.UpDirection)), footRotateSpeed * Time.deltaTime);
 
 		}
 		else
 		{
 			float aAngle;
-			int rotMod = 1;
 
 			if (arm.bendDirectionIsLeft)
 			{
 				arm.hand.localScale = new Vector3(-1, 1, 1);
 				aAngle = Mathf.Atan2((endPos.y - startPos.y),
 				(endPos.x - startPos.x)) - Mathf.Acos((b * b + c * c - a * a) / (2 * b * c));
-				rotMod = -1;
 			}
 			else
 			{
@@ -519,7 +538,7 @@ public class PlayerAnimator : MonoBehaviour
 
 			targetMidPoint = startPos + new Vector2(Mathf.Cos(aAngle) * armTopLength, Mathf.Sin(aAngle) * armTopLength);
 
-			arm.hand.rotation = Quaternion.RotateTowards(arm.hand.rotation, Quaternion.Euler(0, 0, rotMod * -Vector2.Angle(Vector2.up, (targetMidPoint - endPos).normalized)), footRotateSpeed * Time.deltaTime);
+			arm.hand.rotation = Quaternion.RotateTowards(arm.hand.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, (targetMidPoint - endPos).normalized)), footRotateSpeed * Time.deltaTime);
 		}
 		
 		//positions are local to hand
@@ -543,11 +562,35 @@ public class PlayerAnimator : MonoBehaviour
 
 	}
 
+	void TurnBody()
+	{
+		float turnPercent = Mathf.Clamp(-PlayerHorizontalSpeed, -turnSpeedMax, turnSpeedMax);
+		turnPercent = (turnPercent * (1- minMaxOffset)) / (2 * turnSpeedMax) + 0.5f;
+		bodyTurn.SetFloat(timeID, turnPercent);
+	}
 	//Perpendicular in direction is (direction x line) x line
 	Vector2 TripleCross(Vector2 a, Vector2 b, Vector2 c)
 	{
 		float crossValue = a.x * b.y - b.x * a.y;
 		return new Vector2(-crossValue * c.y, crossValue * c.x);
+	}
+
+	public HoldData GetLeftArmHeld()
+	{
+		return leftArm.holdInfo;
+	}
+	public void SetLeftArmHeld(HoldData data)
+	{
+		leftArm.holdInfo = data;
+	}
+
+	public HoldData GetRightArmHeld()
+	{
+		return rightArm.holdInfo;
+	}
+	public void SetRightArmHeld(HoldData data)
+	{
+		rightArm.holdInfo = data;
 	}
 
 	[System.Serializable]
@@ -617,8 +660,17 @@ public class PlayerAnimator : MonoBehaviour
 		public Vector2 handVelocity;
 		[System.NonSerialized]
 		public bool isLeftArm;
+		[System.NonSerialized]
+		public HoldData holdInfo;
 
 		[System.NonSerialized]
 		SpriteRenderer handSprite;
+	}
+
+	public struct HoldData
+	{
+		public bool isHoldingItem;
+		public float handAngle;
+		public float handDistance;
 	}
 }

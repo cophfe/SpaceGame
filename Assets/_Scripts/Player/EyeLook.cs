@@ -32,8 +32,9 @@ public class EyeLook : MonoBehaviour
 		//calculated mouse offset
 		Vector2 mousePos = GameManager.Instance.MainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
-		Vector2 mouseDelta = transform.InverseTransformPoint((mousePos - (Vector2)lookPoint.position));
-		mouseDelta = mouseDelta.normalized * Mathf.Clamp(mouseDelta.magnitude, 0, distanceMaxed) / distanceMaxed;
+		Vector2 mouseDelta = (mousePos - (Vector2)lookPoint.position);
+		mouseDelta = Vector2.ClampMagnitude(mouseDelta, distanceMaxed) / distanceMaxed;
+		mouseDelta = transform.InverseTransformDirection(mouseDelta);
 
 		Vector2 mouseOffsetX = localRight * Vector2.Dot(localRight, mouseDelta) * maxHorizontalDistance;
 		Vector2 mouseOffsetY = up * Vector2.Dot(up, mouseDelta) * maxVerticalDistance;
