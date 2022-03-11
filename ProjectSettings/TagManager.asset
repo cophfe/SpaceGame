@@ -11,11 +11,11 @@ TagManager:
   - Ground
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Item
+  - Player
+  - DoNotCollideWithPlayer
+  - IgnoreStuff
+  - Stuff
   - 
   - 
   - 

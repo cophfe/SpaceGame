@@ -2,40 +2,64 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GravityWell : MonoBehaviour
+public class GravityWell
 {
-	[SerializeField] public float gravityMod = 1.0f; //gravity wells currently only modify the default gravity
-	[SerializeField] public float radius = 10.0f;
+	float gravitationalConstant = 0.00000000000000001f;
+	float radius = 10.0f;
+	float density = 3;
+	float regularMass;
+	public Vector2 Centre { get; set; }
 
-	PlayerController player;
-
-	private void Start()
+	public GravityWell(float radius, float density, float constant, Vector2 centre)
 	{
-		player = GameManager.Instance.Player;
-		if (player == null)
-			enabled = false;
+		regularMass = CalculateMass(radius);
+		this.radius = radius;
+		this.density = density;
+		gravitationalConstant = constant;
+		Centre = centre;
 	}
 
-	private void FixedUpdate()
+	public void Start()
 	{
-		player.Motor.TrySetWell(this); //attempt to set the player's gravity well to this. this will succeed if it is the closest well (right now the player can not exist without a well
+		regularMass = CalculateMass(radius);
+		GameManager.Instance.RegisterWell(this);
 	}
 
-	public virtual float GetGravity(float gravity)
+	public virtual float GetGravityAcceleration(Vector2 position)
 	{
-		//consider using linear gravity like outer wilds does (so it is more intuitive than square cube law gravity for smaller planets)
-
-		return gravity * gravityMod;
+		return CalculateGravity(position);
 	}
 
-	public virtual Vector2 GetUpDirection()
+	float CalculateGravity(Vector2 position)
 	{
-		return (player.PlayerPosition - (Vector2)transform.position).normalized;
+		//IRL: f = GMm/R^2
+		//in this game: f = GMm/R (we are using linear gravity, like outer wilds, becuz planets are smaller)
+
+		//according to a minute physics video, when inside a spherical mass, the outer layers' mass cancel out.
+		//So, while inside a uniformly dense shape, all I have to do is set calculate mass with a radius based on the distance from position to the centre of the planet.
+		
+		float dist = Vector2.Distance(position, Centre);
+		float mass = dist < radius ? CalculateMass(dist) : regularMass;
+
+		float gravitationalForce = gravitationalConstant * mass / dist;
+		return gravitationalForce;
+
 	}
-}
 
-public class SimpleWell : GravityWell
-{
-	public Vector2 upDirection = Vector2.up;
+	float CalculateMass(float radius)
+	{
+		return Mathf.PI * radius * radius * density;
+	}
 
+	public virtual Vector2 GetUpDirection(Vector2 position)
+	{
+		return (position - Centre).normalized;
+	}
+
+	public float GetSquareDistance(Vector2 position)
+	{
+		return (position - Centre).sqrMagnitude;
+	}
+
+	public static implicit operator bool(GravityWell well) => well != null;
 }

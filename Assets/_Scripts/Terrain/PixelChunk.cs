@@ -560,7 +560,7 @@ public class PixelChunk : MonoBehaviour
 					);
 				AddTriVertexColour(pixels[x + 1, y].GetPixelInfo());
 
-				AddCellEdge(x + 1, y + 1, cellType);
+				AddCellEdge(x, y, cellType);
 				break;
 			case 9:
 				AddTriangle(

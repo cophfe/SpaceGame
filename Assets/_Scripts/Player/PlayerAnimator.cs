@@ -21,9 +21,11 @@ public class PlayerAnimator : MonoBehaviour
 	[SerializeField] ArmInfo rightArm;
 	[SerializeField] float armTopLength = 0.57f;
 	[SerializeField] float armBottomLength = 0.46f;
+	[SerializeField] float armRotateSpeed = 900;
 	[SerializeField] float handSpeed = 4;
 	[SerializeField] float handSpeedAirMod = 2.0f;
 	[SerializeField] float handSpeedRunMod = 1.0f;
+	[SerializeField] float handSpeedHoldingMod = 0.3f;
 	[SerializeField] float elbowSpeed = 4;
 	[SerializeField] float inAirHandOffset = 0.3f;
 	[SerializeField] float runHandDistance = 0.6f; //the distance between the attach point and the hand while running
@@ -59,6 +61,9 @@ public class PlayerAnimator : MonoBehaviour
 	public float PlayerHorizontalSpeed { get; private set; } = 0;
 	public bool PlayerIsWalking { get; private set; }
 
+	public ArmInfo LeftArm => leftArm;
+	public ArmInfo RighArm => leftArm;
+
 	#region Private
 	//References
 	PlayerController controller;
@@ -76,6 +81,7 @@ public class PlayerAnimator : MonoBehaviour
 	Animator bodyTurn;
 	int timeID;
 
+	bool overrideDirection = false;
 	#endregion
 
 	private void Awake()
@@ -118,17 +124,17 @@ public class PlayerAnimator : MonoBehaviour
 		PlayerHorizontalSpeed = -Vector2.Dot(tangent, controller.RB.velocity);
 		PlayerIsWalking = PlayerHorizontalSpeed * PlayerHorizontalSpeed > 0.1f * 0.1f;
 
-		//switch if velocity is above minimum
-		if (PlayerHorizontalSpeed * PlayerHorizontalSpeed > 2 * 2 && PlayerPointingLeft != PlayerHorizontalSpeed < 0)
+		//switch if velocity is above minimum and not overriding
+		if (!overrideDirection && PlayerHorizontalSpeed * PlayerHorizontalSpeed > 2 * 2 && PlayerPointingLeft != PlayerHorizontalSpeed < 0)
 		{
 			PlayerPointingLeft = PlayerHorizontalSpeed < 0;
 
-			
+
 			leftFoot.bendDirectionIsLeft = PlayerPointingLeft;
 			rightFoot.bendDirectionIsLeft = PlayerPointingLeft;
 		}
 
-		if (PlayerIsWalking)
+		if (overrideDirection || PlayerIsWalking)
 		{
 			SetBendDirection(ref leftArm);
 			SetBendDirection(ref rightArm);
@@ -156,6 +162,20 @@ public class PlayerAnimator : MonoBehaviour
 		CalculateArm(ref rightArm);
 
 		TurnBody();
+
+		if (overrideDirection)
+		{
+			overrideDirection = false;
+		}
+	}
+
+	public void OverridePlayerPointing(bool pointingLeft)
+	{
+		overrideDirection = true;
+		PlayerPointingLeft = pointingLeft;
+
+		leftFoot.bendDirectionIsLeft = PlayerHorizontalSpeed < 0;
+		rightFoot.bendDirectionIsLeft = PlayerHorizontalSpeed < 0;
 	}
 
 	void SetBendDirection (ref ArmInfo arm)
@@ -426,7 +446,7 @@ public class PlayerAnimator : MonoBehaviour
 		foot.leg.SetPosition(2, Vector2.zero);
 
 		if (float.IsNaN(targetMidPoint.x) || float.IsNaN(targetMidPoint.y))
-			targetMidPoint = 0.5f * foot.leg.GetPosition(0);
+			targetMidPoint = startPos + 0.5f * (Vector2)foot.leg.GetPosition(0);
 
 		Vector2 midPoint = Vector2.MoveTowards(foot.leg.GetPosition(1), foot.foot.InverseTransformPoint(targetMidPoint), kneeSpeed * Time.deltaTime);
 		foot.leg.SetPosition(1, midPoint);
@@ -453,12 +473,12 @@ public class PlayerAnimator : MonoBehaviour
 	{
 		if (arm.holdInfo.isHoldingItem)
 		{
-			Vector2 armDelta = arm.restPoint - (Vector2)arm.armAttachPoint.localPosition;
-			Vector2 targetPosition = (Quaternion.Euler(0, 0, arm.holdInfo.handAngle) * armDelta).normalized * arm.holdInfo.handDistance;
+			Vector2 targetPosition = (Quaternion.Euler(0, 0, arm.holdInfo.handAngle) * Vector2.up).normalized * arm.holdInfo.handDistance;
 
 
 			arm.hand.position -= (Vector3)rBDelta;
-			arm.hand.position = Vector2.SmoothDamp(arm.hand.position, arm.armAttachPoint.TransformPoint(targetPosition), ref arm.handVelocity, handSpeed );
+			arm.hand.position = Vector2.SmoothDamp(arm.hand.position, arm.armAttachPoint.TransformPoint(targetPosition), ref arm.handVelocity, handSpeed * handSpeedHoldingMod);
+
 		}
 		else if (!controller.Motor.IsGrounded)
 		{
@@ -515,17 +535,9 @@ public class PlayerAnimator : MonoBehaviour
 			arm.hand.position = newHandPosition;
 			targetMidPoint = startPos + deltaNorm * armTopLength;
 
-			if (arm.bendDirectionIsLeft)
-			{
-				arm.hand.localScale = new Vector3(-1, 1, 1);
-			}
-			else
-			{
-				arm.hand.localScale = new Vector3(1, 1, 1);
+			arm.handSprite.flipX = arm.bendDirectionIsLeft;
 
-			}
-
-			arm.hand.rotation = Quaternion.RotateTowards(arm.hand.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, controller.Motor.UpDirection)), footRotateSpeed * Time.deltaTime);
+			arm.hand.rotation = Quaternion.RotateTowards(arm.hand.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, (targetMidPoint - endPos).normalized)), armRotateSpeed * Time.deltaTime);
 
 		}
 		else
@@ -534,20 +546,20 @@ public class PlayerAnimator : MonoBehaviour
 
 			if (arm.bendDirectionIsLeft)
 			{
-				arm.hand.localScale = new Vector3(-1, 1, 1);
+				arm.handSprite.flipX = true;
 				aAngle = Mathf.Atan2((endPos.y - startPos.y),
 				(endPos.x - startPos.x)) - Mathf.Acos((b * b + c * c - a * a) / (2 * b * c));
 			}
 			else
 			{
-				arm.hand.localScale = new Vector3(1, 1, 1);
+				arm.handSprite.flipX = false;
 				aAngle = Mathf.Acos((b * b + c * c - a * a) / (2 * b * c)) + Mathf.Atan2((endPos.y - startPos.y),
 					(endPos.x - startPos.x));
 			}
 
 			targetMidPoint = startPos + new Vector2(Mathf.Cos(aAngle) * armTopLength, Mathf.Sin(aAngle) * armTopLength);
 
-			arm.hand.rotation = Quaternion.RotateTowards(arm.hand.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, (targetMidPoint - endPos).normalized)), footRotateSpeed * Time.deltaTime);
+			arm.hand.rotation = Quaternion.RotateTowards(arm.hand.rotation, Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.up, (targetMidPoint - endPos).normalized)), armRotateSpeed * Time.deltaTime);
 		}
 		
 		//positions are local to hand
@@ -599,6 +611,10 @@ public class PlayerAnimator : MonoBehaviour
 	{
 		leftArm.holdInfo = data;
 	}
+	public void SetLeftArmHeld(bool enabled)
+	{
+		leftArm.holdInfo.isHoldingItem = enabled;
+	}
 
 	public HoldData GetRightArmHeld()
 	{
@@ -607,6 +623,10 @@ public class PlayerAnimator : MonoBehaviour
 	public void SetRightArmHeld(HoldData data)
 	{
 		rightArm.holdInfo = data;
+	}
+	public void SetRightArmHeld(bool enabled)
+	{
+		rightArm.holdInfo.isHoldingItem = enabled;
 	}
 
 	[System.Serializable]
@@ -633,7 +653,7 @@ public class PlayerAnimator : MonoBehaviour
 	}
 
 	[System.Serializable]
-	struct ArmInfo
+	public struct ArmInfo
 	{
 		public void Set()
 		{
@@ -652,11 +672,16 @@ public class PlayerAnimator : MonoBehaviour
 			{
 				handSprite.sortingOrder = 5;
 				arm.sortingOrder = 5;
+				if (holdInfo.isHoldingItem && holdInfo.itemSprite)
+					holdInfo.itemSprite.sortingOrder = 6;
+					
 			}
 			else
 			{
 				handSprite.sortingOrder = -5;
 				arm.sortingOrder = -5;
+				if (holdInfo.isHoldingItem && holdInfo.itemSprite)
+					holdInfo.itemSprite.sortingOrder = -6;
 			}
 		}
 
@@ -679,7 +704,7 @@ public class PlayerAnimator : MonoBehaviour
 		public HoldData holdInfo;
 
 		[System.NonSerialized]
-		SpriteRenderer handSprite;
+		public SpriteRenderer handSprite;
 	}
 
 	[System.Serializable]
@@ -688,5 +713,6 @@ public class PlayerAnimator : MonoBehaviour
 		public bool isHoldingItem;
 		public float handAngle;
 		public float handDistance;
+		public SpriteRenderer itemSprite;
 	}
 }

@@ -34,7 +34,7 @@ public struct Pixel
 		Leaves,
 		Metal,
 		Count,
-		None
+		None = 0
 	}
 }
 

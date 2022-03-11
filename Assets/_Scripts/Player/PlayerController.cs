@@ -5,17 +5,18 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-	//
-
 	//Input 
 	public float HorizontalInput {  get; private set; }
 	public Vector2 LookPosition {  get; private set; }
 	bool jumpPressed;
 	bool jumpCancelled;
+	bool actionButtonPressed;
+	bool actionButtonReleased;
 
 	//Properties
 	public PlayerMotor Motor { get; private set; }
 	public PlayerAnimator Animator { get; private set; }
+	public PlayerAction Action { get; private set; }
 	public Rigidbody2D RB { get; private set; }
 	public Vector2 PlayerPosition { get { return transform.position; } }
 
@@ -23,6 +24,7 @@ public class PlayerController : MonoBehaviour
 	{
 		Motor = GetComponentInChildren<PlayerMotor>();
 		Animator = GetComponentInChildren<PlayerAnimator>();
+		Action = GetComponentInChildren<PlayerAction>();
 		RB = GetComponentInChildren<Rigidbody2D>();
 
 		if (GameManager.Instance)
@@ -64,6 +66,33 @@ public class PlayerController : MonoBehaviour
 		}
 	}
 
+	public void OnActionPressed(InputAction.CallbackContext ctx)
+	{
+		if (ctx.performed)
+		{
+			actionButtonPressed = true;
+		}
+		else if (ctx.canceled)
+		{
+			actionButtonReleased = true;
+		}
+	}
+
+	public void OnScroll(InputAction.CallbackContext ctx)
+	{
+		if (ctx.performed)
+		{
+			if (ctx.ReadValue<float>() > 0)
+			{
+				Action.OnSwitchInventorySlot(-1);
+			}
+			else
+			{
+				Action.OnSwitchInventorySlot(1);
+			}
+		}
+	}
+
 	//Evaluate Input
 	public bool EvaluateJumpPressed()
 	{
@@ -77,6 +106,21 @@ public class PlayerController : MonoBehaviour
 	{
 		bool cache = jumpCancelled;
 		jumpCancelled = false;
+
+		return cache;
+	}
+
+	public bool EvaluateActionPressed()
+	{
+		bool cache = actionButtonPressed;
+		actionButtonPressed = false;
+
+		return cache;
+	}
+	public bool EvaluateActionReleased()
+	{
+		bool cache = actionButtonReleased;
+		actionButtonReleased = false;
 
 		return cache;
 	}

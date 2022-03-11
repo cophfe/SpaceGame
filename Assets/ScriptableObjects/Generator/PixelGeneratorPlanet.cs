@@ -8,12 +8,13 @@ public class PixelGeneratorPlanet : PixelGenerators
 	public float planetRadius = 50; //radius of the actual planet in cells
 	public float planetAtmosphereSize = 30; //height of the atmosphere in cells
 	public NoiseData[] surfaceNoise = new NoiseData[0];
-	public Pixel.MaterialType groundMaterial = Pixel.MaterialType.Stone;
+	public PlanetLayer[] layers;
 	public int mountainSeed = 1;
 
 
 	protected override sealed void OnEnable()
 	{
+		
 		base.OnEnable();
 
 		Random.InitState(mountainSeed);
@@ -38,6 +39,7 @@ public class PixelGeneratorPlanet : PixelGenerators
 			for (int y = 0; y <= map.CellResolution; y++)
 			{
 				Vector2 position = chunkOffset + new Vector2(x, y) * cellSize;
+				Vector2 position2 = chunkOffset + (new Vector2(x, y)) * cellSize * 0.95f;
 
 				//using a circular sample of noise guarantees looping noise
 				Vector2 noiseSample = position.normalized;
@@ -48,9 +50,10 @@ public class PixelGeneratorPlanet : PixelGenerators
 					radiusVarience += surfaceNoise[i].Sample(noiseSample);
 				}
 
-				pixels[x, y].value1 = Mathf.Clamp01((planetRadius + radiusVarience) * cellSize + valueThreshold - (position).magnitude);
-				pixels[x, y].type1 = pixels[x, y].value1 <= 0 ? Pixel.MaterialType.None : groundMaterial;
-				pixels[x, y].type2 = Pixel.MaterialType.None;
+				pixels[x, y].value1 = Mathf.Clamp01((planetRadius * (1+ radiusVarience)) * cellSize + valueThreshold - (position).magnitude) / 2;
+				pixels[x, y].value2 = Mathf.Clamp01((planetRadius * (1+ radiusVarience)) * cellSize + valueThreshold - (position2).magnitude) / 2;
+				pixels[x, y].type1 = GetPixelType((position/cellSize * (1 + radiusVarience)).sqrMagnitude );
+				pixels[x, y].type2 = GetPixelType((position2 / cellSize * (1 + radiusVarience)).sqrMagnitude);
 			}
 		}
 		return pixels;
@@ -70,5 +73,27 @@ public class PixelGeneratorPlanet : PixelGenerators
 		{
 			return Mathf.PerlinNoise(v.x* frequency + seed, v.y * frequency + seed) * strength;
 		}
+	}
+
+	Pixel.MaterialType GetPixelType(float squareDistance)
+	{
+		float thickness = 0;
+		for (int i = 0; i < layers.Length; i++)
+		{
+			thickness += layers[i].thickness;
+			if (squareDistance < thickness * thickness)
+			{
+				return layers[i].type;
+			}
+		}
+
+		return Pixel.MaterialType.Stone;
+	}
+
+	[System.Serializable]
+	public struct PlanetLayer
+	{
+		public float thickness;
+		public Pixel.MaterialType type;
 	}
 }

@@ -4,15 +4,29 @@ using UnityEngine;
 
 public class Planet : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+	[SerializeField] PixelGeneratorPlanet planetData = null;
+	[SerializeField] PixelWorld worldPrefab;
+	[SerializeField] public float density = 5;
+	[SerializeField] public float gravitationalConstant = 5;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+	PixelWorld world;
+	GravityWell well;
+
+	private void Awake()
+	{
+		world = Instantiate(worldPrefab, transform, false);
+		world.SetGenerator(planetData);
+
+		well = new GravityWell(planetData.planetRadius, density, gravitationalConstant, transform.position);
+	}
+
+	private void Start()
+	{
+		well.Start();
+	}
+
+	private void Update()
+	{
+		well.Centre = transform.position;
+	}
 }

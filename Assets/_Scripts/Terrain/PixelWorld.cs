@@ -14,10 +14,11 @@ public class PixelWorld : MonoBehaviour
 
 	private void Awake()
 	{
-		CreateChunks();
 	}
 	private void Start()
 	{
+		CreateChunks();
+
 		//register self to GameManager
 		GameManager.Instance.RegisterMap(this);
 	}
@@ -94,6 +95,11 @@ public class PixelWorld : MonoBehaviour
 			}
 		}
 		
+	}
+
+	public void SetGenerator(PixelGenerators generator) //only has an effect before start is called
+	{
+		mapGenerator = generator;
 	}
 
 	void CreateChunks()

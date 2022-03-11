@@ -170,12 +170,6 @@ public class ChunkDrawer : MonoBehaviour
 
 		switch (modifier.Type)
 		{
-			case ModifierType.Fill:
-				modText.text = "Fill";
-				break;
-			case ModifierType.Delete:
-				modText.text = "Delete";
-				break;
 			case ModifierType.AddOvertime:
 				modText.text = "Add";
 				break;

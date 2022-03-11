@@ -2,109 +2,6 @@
     "name": "InputAction",
     "maps": [
         {
-            "name": "Edit",
-            "id": "56007c32-8c74-4555-a3b1-41bedc8aa81f",
-            "actions": [
-                {
-                    "name": "Action",
-                    "type": "Button",
-                    "id": "4e2d0e99-5d74-460f-adef-f66f84fe31a6",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "SwitchFill",
-                    "type": "Button",
-                    "id": "69db8093-aed3-469a-881d-be0e86841aa5",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "ChangeRadius",
-                    "type": "Value",
-                    "id": "bb3c9b4d-d714-44a7-8130-fa66b05b04a5",
-                    "expectedControlType": "Analog",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "ChangeStencil",
-                    "type": "Button",
-                    "id": "09bf7f65-3ee0-439c-97bc-cd49b68f7e09",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "ChangeModifierType",
-                    "type": "Button",
-                    "id": "3a8a1160-1794-4349-9662-e27541e6dcfa",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": ""
-                }
-            ],
-            "bindings": [
-                {
-                    "name": "",
-                    "id": "dbc582bd-872a-4155-88ec-62d7aba43476",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "KBM",
-                    "action": "Action",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "caae36c6-93c9-43e6-9aad-0bd4563dd86d",
-                    "path": "<Keyboard>/tab",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "KBM",
-                    "action": "SwitchFill",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "897e4631-8142-4c26-b21e-50f155820155",
-                    "path": "<Mouse>/scroll/y",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "KBM",
-                    "action": "ChangeRadius",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "1cd1aded-f7d1-463c-a902-a1878c3bdebb",
-                    "path": "<Keyboard>/shift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "KBM",
-                    "action": "ChangeStencil",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "bcfbbfad-ad23-4a4b-a627-cc5386b93e49",
-                    "path": "<Keyboard>/capsLock",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "ChangeModifierType",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                }
-            ]
-        },
-        {
             "name": "Player",
             "id": "bfb8d35e-5f19-4e0d-8ca3-99d50cb6eddf",
             "actions": [
@@ -129,6 +26,22 @@
                     "type": "Button",
                     "id": "3f7bc31e-6513-485d-b9a8-166f040fd9e5",
                     "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Action",
+                    "type": "Button",
+                    "id": "d4a1bc59-aded-43a7-a87d-a1c5b25ea06d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Scroll",
+                    "type": "Value",
+                    "id": "4d5a365b-af46-4145-8bc4-598b6d796d35",
+                    "expectedControlType": "Analog",
                     "processors": "",
                     "interactions": ""
                 }
@@ -188,6 +101,28 @@
                     "action": "Move",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "693d5743-3343-47e6-abb1-83033324f8ae",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Action",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "18c4551b-9175-4432-8483-c558a0cc08e1",
+                    "path": "<Mouse>/scroll/y",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Scroll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

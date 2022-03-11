@@ -146,9 +146,11 @@ public class PlayerMotor : MonoBehaviour
 	void CalculateUpDirection()
 	{
 		//check attached gravity well direction
+		currentGravityWell = GameManager.Instance.GetClosestWell(controller.PlayerPosition);
+
 		if (currentGravityWell)
 		{
-			upDirection = currentGravityWell.GetUpDirection();
+			upDirection = currentGravityWell.GetUpDirection(controller.PlayerPosition);
 			rightDirection = -Vector2.Perpendicular(upDirection);
 		}
 	}
@@ -441,11 +443,11 @@ public class PlayerMotor : MonoBehaviour
 		//gravity
 		if (state == MovementState.SLIDING)
 		{
-			forcesVelocity += slopeGravityMod * Vector2.Dot(groundTangent, upDirection * (currentGravityWell ? currentGravityWell.GetGravity(gravity) : gravity) * Time.deltaTime) * groundTangent;
+			forcesVelocity += slopeGravityMod * Vector2.Dot(groundTangent, upDirection * (currentGravityWell ? gravity * currentGravityWell.GetGravityAcceleration(controller.PlayerPosition) : gravity) * Time.deltaTime) * groundTangent;
 		}
 		else
 		{
-			forcesVelocity += upDirection * (currentGravityWell ? currentGravityWell.GetGravity(gravity) : gravity) * Time.deltaTime;
+			forcesVelocity += upDirection * (currentGravityWell ? gravity * currentGravityWell.GetGravityAcceleration(controller.PlayerPosition) : gravity) * Time.deltaTime;
 		}
 
 		//this will only affect forces from sliding, so it should be strong
@@ -488,20 +490,6 @@ public class PlayerMotor : MonoBehaviour
 		else
 		{
 			return (target - current).normalized * stepMagnitude;
-		}
-	}
-
-	//gravity wells try to catch the players attention if they are close enough
-	public void TrySetWell(GravityWell well)
-	{
-		if (well)
-		{
-			if (!currentGravityWell
-				|| ((currentGravityWell.transform.position - transform.position).sqrMagnitude <
-				(well.transform.position - transform.position).sqrMagnitude))
-			{
-				currentGravityWell = well;
-			}
 		}
 	}
 

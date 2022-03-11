@@ -4,8 +4,6 @@ using UnityEngine;
 
 public enum ModifierType 
 {
-	Fill,
-	Delete,
 	AddOvertime,
 	RemoveOvertime,
 	Count
@@ -15,15 +13,30 @@ public class PixelModifier
 {
 	PixelWorld map;									//the current map it is being used on
 	float radius;									//the radius of the stencil
-	ModifierType modifierType = ModifierType.Fill;	//the stencil modifier type
+	ModifierType modifierType = ModifierType.AddOvertime;	//the stencil modifier type
 	float strength = 1;								//affects the speed of change of pixels
 	Vector2 centre;                                 //the centre position of the modification
 	float rotation = 0;								//rotation in radians
 	PixelStencil stencil;                           //the current stencil
 	Pixel.MaterialType material;
 	
-	protected delegate float ApplyFunctions(ref Pixel pixel, Vector2 position, PixelModifier stencil);
-	static ApplyFunctions[] apply = new ApplyFunctions[] { ApplyFill, ApplyDelete, ApplyAdd, ApplyRemove };
+	public delegate void OnRemove(float amountRemoved, float materialDistribution, Pixel.MaterialType type1, Pixel.MaterialType type2); //remove removes from both pixel types, and cannot be cancelled halfway through (no reason to)
+	public delegate float OnAdd(float amountAdded, Pixel.MaterialType type); //can change the value added
+	OnRemove onRemove;
+	OnAdd onAdd;
+	public void SetOnRemove(OnRemove newOnRemove)
+	{
+		if (newOnRemove != null)
+			onRemove = newOnRemove;
+	}
+	public void SetOnAdd(OnAdd newOnAdd)
+	{
+		if (newOnAdd != null)
+			onAdd = newOnAdd;
+	}
+
+	protected delegate void ApplyFunctions(ref Pixel pixel, Vector2 position, PixelModifier stencil);
+	static ApplyFunctions[] apply = new ApplyFunctions[] { ApplyAdd, ApplyRemove };
 
 	public PixelModifier(float strength, float radius, ModifierType type, Pixel.MaterialType pixelType, PixelStencil stencil)
 	{
@@ -32,23 +45,27 @@ public class PixelModifier
 		this.modifierType = type;
 		this.stencil = stencil;
 		material = pixelType;
+
+		//add dummy functions so that there is no need to if check
+		SetOnRemove(DefaultOnRemove);
+		SetOnAdd(DefaultOnAdd);
 	}
 
 	public bool IsRemoving()
 	{
-		return modifierType == ModifierType.Delete || modifierType == ModifierType.RemoveOvertime;
+		return modifierType == ModifierType.RemoveOvertime;
 	}
 
 	//returns the change in pixel value
-	public float Apply(ref Pixel pixel, Vector2 position)
+	public void Apply(ref Pixel pixel, Vector2 position)
 	{
 		//calls the correct apply function based on the modifier type
 		//I'm not sure if this is better than a switch statement honestly. its definitely messier.
-		return apply[(int)modifierType](ref pixel, position, this);
+		apply[(int)modifierType](ref pixel, position, this);
 	}
 
 	#region Apply Functions
-	static float ApplyFill(ref Pixel pixel, Vector2 position, PixelModifier modifier)
+	static void ApplyAdd(ref Pixel pixel, Vector2 position, PixelModifier modifier)
 	{
 		if (modifier.stencil.ShouldModify(position, modifier, ref pixel))
 		{
@@ -56,79 +73,25 @@ public class PixelModifier
 			if (pixel.type1 == modifier.material || (pixel.type2 != modifier.material && pixel.value1 == 0))
 			{
 				pixel.type1 = modifier.material;
-				float oldValue = pixel.value1;
-				float newValue = Mathf.Clamp(targetValue, oldValue, 1 - pixel.value2);
-				pixel.value1 = newValue;
-				return newValue - oldValue;
+				float newValue = Mathf.Clamp(Mathf.MoveTowards(pixel.value1, targetValue, modifier.strength * Time.deltaTime), pixel.value1, 1 - pixel.value2);
+				pixel.value1 = pixel.value1 + modifier.onAdd(newValue - pixel.value1, pixel.type1);
 			}
 			else
 			{
 				pixel.type2 = modifier.material;
-				float oldValue = pixel.value2;
-				float newValue = Mathf.Clamp(targetValue, oldValue, 1 - pixel.value1);
-				pixel.value2 = newValue;
-				return newValue - oldValue;
+				float newValue = Mathf.Clamp(Mathf.MoveTowards(pixel.value2, targetValue, modifier.strength * Time.deltaTime), pixel.value2, 1 - pixel.value1);
+				pixel.value2 = pixel.value2 + modifier.onAdd(newValue - pixel.value2, pixel.type2);
 			}
 		}
-		else
-			return 0;
-	}
-
-	static float ApplyDelete(ref Pixel pixel, Vector2 position, PixelModifier modifier)
-	{
-		float oldValue = pixel.Value;
-		float t = pixel.Material1Percentage;
-
-		float newValue = Mathf.Clamp(modifier.stencil.GetTargetRemoveValue(position, modifier), 0, oldValue);
-		pixel.value1 -= newValue * t;
-		pixel.value2 -= newValue * (1-t);
-
-		return pixel.Value - oldValue;
-	}
-
-	static float ApplyAdd(ref Pixel pixel, Vector2 position, PixelModifier modifier)
-	{
-		if (modifier.stencil.ShouldModify(position, modifier, ref pixel))
+		else if (pixel.Value < modifier.map.ValueThreshold)
 		{
-			float targetValue = modifier.stencil.GetTargetValue(position, modifier);
-			if (pixel.type1 == modifier.material || (pixel.type2 != modifier.material && pixel.value1 == 0))
-			{
-				pixel.type1 = modifier.material;
-				float oldValue = pixel.value1;
-				float newValue = Mathf.Clamp(Mathf.MoveTowards(oldValue, targetValue, modifier.strength * Time.deltaTime), oldValue, 1 - pixel.value2);
-				pixel.value1 = newValue;
-				return newValue - oldValue;
-			}
-			else
-			{
-				pixel.type2 = modifier.material;
-				float oldValue = pixel.value2;
-				float newValue = Mathf.Clamp(Mathf.MoveTowards(oldValue, targetValue, modifier.strength * Time.deltaTime), oldValue, 1 - pixel.value1);
-				pixel.value2 = newValue;
-				return newValue - oldValue;
-			}
-		}
-		else
-		{
-			if (pixel.Value < modifier.map.ValueThreshold)
-			{
-				return ApplyRemove(ref pixel, position, modifier);
-
-				//if (pixel.value1 < pixel.value2)
-				//{
-				//}
-				//else
-				//{
-				//	return ApplyRemove(ref pixel, position, modifier);
-				//}
-			}
-			return 0;
+			ApplyRemove(ref pixel, position, modifier);
 		}
 		
 		
 	}
 
-	static float ApplyRemove(ref Pixel pixel, Vector2 position, PixelModifier modifier)
+	static void ApplyRemove(ref Pixel pixel, Vector2 position, PixelModifier modifier)
 	{
 		float oldValue = pixel.Value;
 		float t = pixel.Material1Percentage;
@@ -139,9 +102,9 @@ public class PixelModifier
 		float newValue = Mathf.Clamp(Mathf.MoveTowards(oldValue, targetValue, modifier.strength * Time.deltaTime)
 			,0, oldValue);
 
+		modifier.onRemove(newValue - oldValue, t, pixel.type1, pixel.type2);
 		pixel.value1 = t * newValue;
 		pixel.value2 = (1-t) * newValue;
-		return newValue - oldValue;
 	}
 	
 	#endregion
@@ -154,6 +117,9 @@ public class PixelModifier
 	public float YStart { get { return centre.y - radius ; } }
 
 	public float YEnd { get { return centre.y + radius ; } }
+
+	public float DefaultOnAdd(float amountAdded, Pixel.MaterialType type) { return amountAdded; }
+	public void DefaultOnRemove(float amountRemoved, float materialDistribution, Pixel.MaterialType type1, Pixel.MaterialType type2) { }
 	#endregion
 
 	#region GetSet properties

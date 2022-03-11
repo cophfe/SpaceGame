@@ -19,10 +19,26 @@ MonoBehaviour:
   planetAtmosphereSize: 30
   surfaceNoise:
   - frequency: 2
-    strength: 9
+    strength: 0.15
   - frequency: 4
-    strength: 6
+    strength: 0.1
   - frequency: 8
-    strength: 3
-  groundMaterial: 1
+    strength: 0.05
+  layers:
+  - thickness: 10
+    type: 5
+  - thickness: 30
+    type: 1
+  - thickness: 3
+    type: 5
+  - thickness: 12
+    type: 0
+  - thickness: 5
+    type: 3
+  - thickness: 10
+    type: 0
+  - thickness: 5
+    type: 3
+  - thickness: 1000
+    type: 2
   mountainSeed: 1

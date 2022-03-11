@@ -43,11 +43,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44cc3adbd29206e4da3f134180fb3b86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkResolution: {x: 4, y: 4}
   chunkPrefab: {fileID: 1189084220349402336, guid: e35768eb23ff73b49b302f0cb6f57d72, type: 3}
-  cellResolution: 32
-  cellSize: 1
-  valueThreshold: 0.5
-  mapGenerator: {fileID: 0}
+  mapGenerator: {fileID: 11400000, guid: 4b41f08dc61aee6428ed3955c8364508, type: 2}
   physicsMaterial: {fileID: 6200000, guid: 3723cfc7f54ab1c40ae7454a5511c732, type: 2}
-  perlinSampleSize: 0.1
